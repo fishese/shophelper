@@ -15,6 +15,46 @@
   var undo = null;
   var barOpen = false;
   var dialogCloser = null;
+  var dialogBackDispose = null;
+  var backStack = [];
+
+  function isHomePage() {
+    return document.documentElement.dataset.shHome === '1';
+  }
+
+  function pushBack(handler) {
+    if (typeof handler !== 'function') return function () {};
+    backStack.push(handler);
+    return function dispose() {
+      var i = backStack.lastIndexOf(handler);
+      if (i >= 0) backStack.splice(i, 1);
+    };
+  }
+
+  function handleBack() {
+    while (backStack.length) {
+      var top = backStack[backStack.length - 1];
+      try {
+        if (top()) return true;
+      } catch (err) {}
+      backStack.pop();
+    }
+    if (!isHomePage()) {
+      window.location.href = rootPath() + '/index.html';
+      return true;
+    }
+    return false;
+  }
+
+  function wireHardwareBack() {
+    var Cap = window.Capacitor;
+    var App = Cap && Cap.Plugins && Cap.Plugins.App;
+    if (!App || typeof App.addListener !== 'function') return;
+    App.addListener('backButton', function () {
+      if (handleBack()) return;
+      if (typeof App.exitApp === 'function') App.exitApp();
+    });
+  }
 
   function homeCurrency() {
     return (Store.load().settings.homeCurrency || 'HKD').toUpperCase();
@@ -328,10 +368,18 @@
     panel.appendChild(el('h3', '', opts.title || ''));
     wrap.appendChild(panel);
     function close() {
+      if (dialogBackDispose) {
+        dialogBackDispose();
+        dialogBackDispose = null;
+      }
       wrap.remove();
       dialogCloser = null;
     }
     dialogCloser = close;
+    dialogBackDispose = pushBack(function () {
+      close();
+      return true;
+    });
     wrap.addEventListener('click', function (event) { if (event.target === wrap) close(); });
     document.body.appendChild(wrap);
     opts.render(panel, close);
@@ -672,6 +720,7 @@
       title: document.documentElement.dataset.shTitle || 'Shophelper',
       home: document.documentElement.dataset.shHome === '1'
     });
+    wireHardwareBack();
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
   else boot();
@@ -682,6 +731,9 @@
     clearResult: clearResult,
     openPriceSave: openPriceSave,
     openDialog: openDialog,
+    closeDialog: closeDialog,
+    pushBack: pushBack,
+    handleBack: handleBack,
     toast: toast,
     money: money,
     homeCurrency: homeCurrency,

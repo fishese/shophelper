@@ -212,12 +212,20 @@ function updateAppBadge() {
 }
 
 /* ---------- navigation ---------- */
+let disposeViewBack=null;
+let disposeQrBack=null;
+function clearViewBack(){if(disposeViewBack){disposeViewBack();disposeViewBack=null;}}
+function clearQrBack(){if(disposeQrBack){disposeQrBack();disposeQrBack=null;}}
 function show(view){
+  clearViewBack();
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   $('#view-'+view).classList.add('active');
   document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
   $('#nav-'+view).classList.add('active');
   window.scrollTo(0,0);
+  if(view!=='list'&&window.Shophelper&&Shophelper.pushBack){
+    disposeViewBack=Shophelper.pushBack(()=>{renderList();show('list');return true;});
+  }
 }
 $('#nav-list').onclick=()=>{renderList();show('list');};
 $('#nav-add').onclick=()=>{resetForm();show('add');};
@@ -1104,6 +1112,10 @@ async function showCode(c){
     ?'Original code from your photo. Hold the screen up to the scanner and turn brightness up if needed.'
     :'Showing '+formatLabel(format)+'. Hold the screen up to the scanner and turn brightness up if needed.';
   $('#qrModal').classList.add('show');
+  clearQrBack();
+  if(window.Shophelper&&Shophelper.pushBack){
+    disposeQrBack=Shophelper.pushBack(()=>{closeQR();return true;});
+  }
   try{if('wakeLock'in navigator)_wakeLock=await navigator.wakeLock.request('screen');}catch(_){}
 }
 async function showPhoto(id){
@@ -1118,6 +1130,10 @@ async function showPhoto(id){
     const el=$('#qrImg');el.style.imageRendering='auto';el.src=url;el.style.display='block';
     $('#qrHint').textContent='Saved on this device only.';
     $('#qrModal').classList.add('show');
+    clearQrBack();
+    if(window.Shophelper&&Shophelper.pushBack){
+      disposeQrBack=Shophelper.pushBack(()=>{closeQR();return true;});
+    }
     el.onload=()=>URL.revokeObjectURL(url);
   }catch(_){toast('Could not open photo');}
 }
@@ -1133,7 +1149,7 @@ function adjustBalance(id, dir){
   c.balance=(prefix?prefix+' ':'')+(Math.round(next*100)/100).toFixed(2);
   persist();renderList();
 }
-function closeQR(){$('#qrModal').classList.remove('show');if(_wakeLock){_wakeLock.release().catch(()=>{});_wakeLock=null;}}
+function closeQR(){clearQrBack();$('#qrModal').classList.remove('show');if(_wakeLock){_wakeLock.release().catch(()=>{});_wakeLock=null;}}
 document.addEventListener('visibilitychange',async()=>{
   if(document.visibilityState==='visible'&&$('#qrModal').classList.contains('show')&&'wakeLock'in navigator){
     try{_wakeLock=await navigator.wakeLock.request('screen');}catch(_){}

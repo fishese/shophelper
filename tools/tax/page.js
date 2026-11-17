@@ -66,12 +66,22 @@
 
   document.getElementById('tabEstimate').addEventListener('click', function () { show('estimate'); });
   document.getElementById('tabTracker').addEventListener('click', function () { show('tracker'); });
+  var disposeTabBack = null;
   function show(which) {
+    if (disposeTabBack) { disposeTabBack(); disposeTabBack = null; }
     document.getElementById('estimate').hidden = which !== 'estimate';
     document.getElementById('tracker').hidden = which !== 'tracker';
     document.getElementById('tabEstimate').classList.toggle('on', which === 'estimate');
     document.getElementById('tabTracker').classList.toggle('on', which === 'tracker');
-    if (which === 'tracker') renderTracker();
+    if (which === 'tracker') {
+      renderTracker();
+      if (SH.pushBack) {
+        disposeTabBack = SH.pushBack(function () {
+          show('estimate');
+          return true;
+        });
+      }
+    }
   }
 
   document.getElementById('saveRefund').addEventListener('click', function () {

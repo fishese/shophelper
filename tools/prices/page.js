@@ -15,7 +15,12 @@
   }
 
   var openId = null;
+  var disposeDetailBack = null;
+  function clearDetailBack() {
+    if (disposeDetailBack) { disposeDetailBack(); disposeDetailBack = null; }
+  }
   function renderList() {
+    clearDetailBack();
     openId = null;
     list.innerHTML = '';
     detail.hidden = true;
@@ -58,6 +63,7 @@
   }
 
   function renderDetail(id) {
+    clearDetailBack();
     openId = id;
     list.innerHTML = '';
     detail.hidden = false;
@@ -65,6 +71,12 @@
     var data = state();
     var card = Prices.card(data, id);
     if (!card) { renderList(); return; }
+    if (SH.pushBack) {
+      disposeDetailBack = SH.pushBack(function () {
+        renderList();
+        return true;
+      });
+    }
     var back = document.createElement('button');
     back.className = 'sh-btn';
     back.type = 'button';
