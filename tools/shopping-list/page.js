@@ -342,10 +342,11 @@
     try {
       link = Codec.buildUrl(Codec.encodeShare(payload), location.href.split('#')[0]);
     } catch (err) {
-      dlg.appendChild(mk('p', 'sh-note', t('listImportBad')));
+      dlg.appendChild(mk('p', 'sh-note', t('listShareFailed')));
       actions.appendChild(closeBtn(dlg));
       dlg.appendChild(actions);
       openDialog(dlg);
+      toast(t('listShareFailed'));
       return;
     }
 
