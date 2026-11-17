@@ -650,7 +650,23 @@
   }
   window.addEventListener('shophelper-lang', applyPageI18n);
 
+  // Android shortcuts: MainActivity may leave a tool path to open (Capacitor https://localhost/...).
+  function honorLaunchPath() {
+    try {
+      var launch = localStorage.getItem('shophelper_launch_path');
+      if (!launch) return false;
+      localStorage.removeItem('shophelper_launch_path');
+      if (launch.indexOf('/tools/') !== 0 || launch.indexOf('..') !== -1) return false;
+      if (window.location.pathname.indexOf(launch) !== -1) return false;
+      window.location.replace(window.location.origin + launch);
+      return true;
+    } catch (err) {
+      return false;
+    }
+  }
+
   function boot() {
+    if (honorLaunchPath()) return;
     if (document.documentElement.dataset.shAuto !== '1') return;
     mount({
       title: document.documentElement.dataset.shTitle || 'Shophelper',

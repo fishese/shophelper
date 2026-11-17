@@ -4,4 +4,12 @@
     <string name="title_activity_main">Shophelper</string>
     <string name="package_name">com.fishese.shophelper</string>
     <string name="custom_url_scheme">com.fishese.shophelper</string>
+    <string name="shortcut_shopping_list">Shopping List</string>
+    <string name="shortcut_prices">Prices</string>
+    <string name="shortcut_cartulator">Cartulator</string>
+    <string name="shortcut_coupons">Coupons</string>
+    <string name="shortcut_currency">Currency</string>
+    <string name="shortcut_deals">Deals</string>
+    <string name="shortcut_tax">Tax</string>
+    <string name="shortcut_units">Units</string>
 </resources>

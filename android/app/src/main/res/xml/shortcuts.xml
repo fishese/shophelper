@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="shopping_list"
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutShortLabel="@string/shortcut_shopping_list"
+        android:shortcutLongLabel="@string/shortcut_shopping_list">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.fishese.shophelper"
+            android:targetClass="com.fishese.shophelper.MainActivity">
+            <extra android:name="js.path" android:value="/tools/shopping-list/index.html" />
+        </intent>
+    </shortcut>
+    <shortcut
+        android:shortcutId="prices"
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutShortLabel="@string/shortcut_prices"
+        android:shortcutLongLabel="@string/shortcut_prices">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.fishese.shophelper"
+            android:targetClass="com.fishese.shophelper.MainActivity">
+            <extra android:name="js.path" android:value="/tools/prices/index.html" />
+        </intent>
+    </shortcut>
+    <shortcut
+        android:shortcutId="cartulator"
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutShortLabel="@string/shortcut_cartulator"
+        android:shortcutLongLabel="@string/shortcut_cartulator">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.fishese.shophelper"
+            android:targetClass="com.fishese.shophelper.MainActivity">
+            <extra android:name="js.path" android:value="/tools/cartulator/index.html" />
+        </intent>
+    </shortcut>
+    <shortcut
+        android:shortcutId="coupons"
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutShortLabel="@string/shortcut_coupons"
+        android:shortcutLongLabel="@string/shortcut_coupons">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.fishese.shophelper"
+            android:targetClass="com.fishese.shophelper.MainActivity">
+            <extra android:name="js.path" android:value="/tools/coupons/index.html" />
+        </intent>
+    </shortcut>
+    <shortcut
+        android:shortcutId="currency"
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutShortLabel="@string/shortcut_currency"
+        android:shortcutLongLabel="@string/shortcut_currency">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.fishese.shophelper"
+            android:targetClass="com.fishese.shophelper.MainActivity">
+            <extra android:name="js.path" android:value="/tools/currency/index.html" />
+        </intent>
+    </shortcut>
+    <shortcut
+        android:shortcutId="deals"
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutShortLabel="@string/shortcut_deals"
+        android:shortcutLongLabel="@string/shortcut_deals">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.fishese.shophelper"
+            android:targetClass="com.fishese.shophelper.MainActivity">
+            <extra android:name="js.path" android:value="/tools/deals/index.html" />
+        </intent>
+    </shortcut>
+    <shortcut
+        android:shortcutId="tax"
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutShortLabel="@string/shortcut_tax"
+        android:shortcutLongLabel="@string/shortcut_tax">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.fishese.shophelper"
+            android:targetClass="com.fishese.shophelper.MainActivity">
+            <extra android:name="js.path" android:value="/tools/tax/index.html" />
+        </intent>
+    </shortcut>
+    <shortcut
+        android:shortcutId="units"
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutShortLabel="@string/shortcut_units"
+        android:shortcutLongLabel="@string/shortcut_units">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.fishese.shophelper"
+            android:targetClass="com.fishese.shophelper.MainActivity">
+            <extra android:name="js.path" android:value="/tools/units/index.html" />
+        </intent>
+    </shortcut>
+</shortcuts>
