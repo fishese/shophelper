@@ -187,13 +187,13 @@
   }
 
   function finishTrip() {
-    // Spec UI is "clear checked"; plan tests also idle unchecked staples via finishTrip.
-    // Process every active item: staples → idle pool; one-offs → delete.
+    // Clear checked: process only isActive && isChecked.
+    // Recurring checked → idle; one-off checked → delete; unchecked active stay active.
     return persistMutation(function (doc, list) {
       var kept = [];
       for (var i = 0; i < list.items.length; i++) {
         var item = list.items[i];
-        if (!item.isActive) {
+        if (!(item.isActive && item.isChecked)) {
           kept.push(item);
           continue;
         }
@@ -202,7 +202,7 @@
           item.isChecked = false;
           kept.push(item);
         }
-        // active one-offs are dropped
+        // checked one-offs are dropped
       }
       list.items = kept;
       return list;

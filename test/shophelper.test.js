@@ -355,6 +355,7 @@ test('list addItem reactivates single clear title match', () => {
   });
   api.save(api.defaults());
   const a = api.addItem({ title: 'Eggs', isRecurring: true });
+  api.toggleChecked(a.id, true);
   api.finishTrip(); // eggs → idle staple
   const b = api.addItem({ title: 'eggs', quantity: '12' });
   assert.strictEqual(b.id, a.id);
@@ -404,6 +405,7 @@ test('list importReplace keeps idle staples', () => {
   });
   api.save(api.defaults());
   const staple = api.addItem({ title: 'Butter', isRecurring: true });
+  api.toggleChecked(staple.id, true);
   api.finishTrip();
   api.addItem({ title: 'Chips', isRecurring: false });
   api.importReplace([{ t: 'Salsa', r: 0, c: 0 }]);
