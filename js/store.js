@@ -20,7 +20,8 @@
       results: { items: [] },
       products: [],
       observations: [],
-      refunds: []
+      refunds: [],
+      shoppingList: null
     };
   }
 
@@ -37,6 +38,7 @@
     base.products = Array.isArray(raw.products) ? raw.products : [];
     base.observations = Array.isArray(raw.observations) ? raw.observations : [];
     base.refunds = Array.isArray(raw.refunds) ? raw.refunds : [];
+    base.shoppingList = raw.shoppingList && typeof raw.shoppingList === 'object' ? raw.shoppingList : null;
     return base;
   }
 

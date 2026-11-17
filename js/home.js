@@ -47,6 +47,11 @@
         button.textContent = 'Replace with this backup';
         button.addEventListener('click', function () {
           Store.save(pending);
+          try {
+            if (pending.shoppingList) {
+              localStorage.setItem('shophelper_list_v1', JSON.stringify(pending.shoppingList));
+            }
+          } catch (e) {}
           SH.applyTheme();
           SH.toast('Backup restored.');
           location.reload();

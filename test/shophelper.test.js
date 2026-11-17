@@ -324,6 +324,15 @@ test('rate parser keeps the date and does not call a cached rate live', () => {
 
 const listStore = require('../js/list-store');
 const listCodec = require('../js/list-codec');
+const store = require('../js/store');
+
+test('store round-trips shoppingList', () => {
+  const data = store.defaults();
+  data.shoppingList = { version: 1, activeListId: 'x', lists: [{ id: 'x', name: 'Shopping', items: [] }] };
+  const merged = store.readBundle(store.bundle(data));
+  assert.ok(merged.shoppingList);
+  assert.strictEqual(merged.shoppingList.activeListId, 'x');
+});
 
 test('list store defaults one empty list', () => {
   const d = listStore.defaults();
