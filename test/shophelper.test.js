@@ -424,6 +424,39 @@ test('list importMerge allows duplicate titles', () => {
   assert.ok(milks.length >= 2);
 });
 
+test('list importMerge appends sorts after local max and moveItem works across them', () => {
+  const mem = { data: null };
+  const api = listStore.withStorage({
+    getItem: () => mem.data,
+    setItem: (_k, v) => { mem.data = v; }
+  });
+  api.save(api.defaults());
+  const a = api.addItem({ title: 'Local A' });
+  const b = api.addItem({ title: 'Local B' });
+  const localMax = Math.max(a.sort, b.sort);
+  // Payload `o` values collide with local sorts; importer must reassign.
+  api.importMerge([
+    { t: 'Remote Y', r: 0, c: 0, o: 2 },
+    { t: 'Remote X', r: 0, c: 0, o: 1 }
+  ]);
+  const items = api.activeList().items;
+  const x = items.find((i) => i.title === 'Remote X');
+  const y = items.find((i) => i.title === 'Remote Y');
+  assert.ok(x.sort > localMax);
+  assert.ok(y.sort > x.sort); // relative payload order preserved (o=1 before o=2)
+  const sorts = items.map((i) => i.sort);
+  assert.strictEqual(new Set(sorts).size, sorts.length);
+  const order = () => api.activeList().items
+    .filter((i) => i.isActive && !i.isChecked)
+    .sort((p, q) => p.sort - q.sort)
+    .map((i) => i.title);
+  assert.deepStrictEqual(order(), ['Local A', 'Local B', 'Remote X', 'Remote Y']);
+  api.moveItem(x.id, -1); // across local/imported boundary
+  assert.deepStrictEqual(order(), ['Local A', 'Remote X', 'Local B', 'Remote Y']);
+  api.moveItem(b.id, 1);
+  assert.deepStrictEqual(order(), ['Local A', 'Remote X', 'Remote Y', 'Local B']);
+});
+
 test('list importReplace keeps idle staples', () => {
   const mem = { data: null };
   const api = listStore.withStorage({

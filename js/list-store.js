@@ -249,12 +249,24 @@
       isRecurring: !!(row && row.r),
       isActive: true,
       isChecked: !!(row && row.c),
-      sort: row && row.o != null && isFinite(Number(row.o)) ? Number(row.o) : sort
+      sort: sort
     };
   }
 
+  // Payload `o` is only a relative order hint from the sender; importer
+  // reassigns absolute sorts (appended after local max) to avoid collisions.
+  function orderRows(rows) {
+    return rows.map(function (row, idx) {
+      var o = row && row.o != null ? Number(row.o) : NaN;
+      return { row: row, idx: idx, o: isFinite(o) ? o : Infinity };
+    }).sort(function (a, b) {
+      if (a.o !== b.o) return a.o < b.o ? -1 : 1;
+      return a.idx - b.idx;
+    }).map(function (e) { return e.row; });
+  }
+
   function importMerge(rows) {
-    rows = Array.isArray(rows) ? rows : [];
+    rows = orderRows(Array.isArray(rows) ? rows : []);
     return persistMutation(function (doc, list) {
       var nextSort = maxSort(list.items) + 1;
       for (var i = 0; i < rows.length; i++) {
@@ -265,7 +277,7 @@
   }
 
   function importReplace(rows) {
-    rows = Array.isArray(rows) ? rows : [];
+    rows = orderRows(Array.isArray(rows) ? rows : []);
     return persistMutation(function (doc, list) {
       var idle = list.items.filter(function (i) { return !i.isActive; });
       var nextSort = maxSort(idle) + 1;
