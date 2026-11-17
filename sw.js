@@ -1,5 +1,5 @@
 'use strict';
-var CACHE = 'shophelper-v11';
+var CACHE = 'shophelper-v13';
 var ASSETS = [
   './',
   './index.html',
@@ -20,6 +20,10 @@ var ASSETS = [
   './js/results.js',
   './js/rates.js',
   './js/home.js',
+  './js/list-store.js',
+  './js/list-codec.js',
+  './tools/shopping-list/index.html',
+  './tools/shopping-list/page.js',
   './tools/units/index.html',
   './tools/units/page.js',
   './tools/currency/index.html',
