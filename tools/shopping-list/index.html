@@ -8,11 +8,16 @@
 <link rel="stylesheet" href="../../tools-bridge.css?v=12">
 <script src="../../js/theme.js"></script>
 <style>
+  .list-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+  .list-head h2, .list-block h2 { margin: 0; font-size: 1.05rem; }
+  .list-count { color: var(--sh-muted); font-weight: 650; font-size: .85rem; }
+  .list-head-actions { display: flex; gap: 6px; }
+  .list-head-actions .sh-btn { min-height: 36px; padding: 4px 10px; }
   .list-rows { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
   .list-row {
-    display: flex; align-items: center; gap: 6px;
+    display: flex; align-items: center; gap: 4px;
     border: 1px solid var(--sh-line); border-radius: 12px;
-    background: var(--sh-bg); padding: 4px 6px; min-height: 48px;
+    background: var(--sh-bg); padding: 2px 4px 2px 2px; min-height: 48px;
   }
   .list-row.is-dragging { opacity: .45; }
   .list-row.drop-before { box-shadow: 0 -3px 0 0 var(--sh-accent); }
@@ -29,12 +34,20 @@
   }
   .list-icon-btn[aria-pressed="true"] { color: var(--sh-accent); font-weight: 800; }
   .list-icon-btn:disabled { opacity: .3; }
-  #finishTrip { margin-top: 10px; }
+  .list-checked { margin-top: 12px; border-top: 1px solid var(--sh-line); padding-top: 8px; }
+  .list-checked > summary { cursor: pointer; font-weight: 700; min-height: 40px; display: flex; align-items: center; }
+  #finishTrip { margin-top: 8px; }
+  .add-row { display: grid; grid-template-columns: 1fr 4.5rem; gap: 8px; align-items: end; }
+  .add-row .span-2 { grid-column: 1 / -1; }
+  .add-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
   .staple-chips { display: flex; flex-wrap: wrap; gap: 8px; }
   .staple-chip {
-    min-height: 40px; padding: 6px 14px; border-radius: 999px;
-    border: 1px solid var(--sh-line); background: var(--sh-bg); font-weight: 650;
+    display: inline-flex; align-items: stretch; min-height: 40px; border-radius: 999px;
+    border: 1px solid var(--sh-line); background: var(--sh-bg); overflow: hidden;
   }
+  .staple-chip button { border: 0; background: transparent; min-height: 40px; }
+  .staple-add { padding: 6px 4px 6px 14px; font-weight: 650; }
+  .staple-x { padding: 0 10px; color: var(--sh-muted); }
   #shareDialog, #importDialog {
     width: min(560px, calc(100% - 24px)); max-height: 86vh; overflow: auto;
     background: var(--sh-card); color: var(--sh-ink);
@@ -52,36 +65,45 @@
 </head>
 <body>
 <main class="sh-page">
+  <section class="sh-card list-block">
+    <div class="list-head">
+      <h2><span data-i18n="listToBuy">To buy</span> <span id="toBuyCount" class="list-count"></span></h2>
+      <div class="list-head-actions">
+        <button class="sh-btn" id="shareBtn" type="button" data-i18n="listShare">Share</button>
+        <button class="sh-btn" id="importBtn" type="button" data-i18n="listImport">Import</button>
+      </div>
+    </div>
+    <ul id="toBuy" class="list-rows"></ul>
+
+    <details class="list-checked" id="checkedWrap">
+      <summary><span data-i18n="listChecked">Checked</span> <span id="checkedCount" class="list-count"></span></summary>
+      <ul id="checked" class="list-rows"></ul>
+      <button class="sh-btn" id="finishTrip" type="button" data-i18n="listFinishTrip">Finish trip / clear checked</button>
+    </details>
+  </section>
+
   <form id="addForm" class="sh-card">
-    <label class="sh-label" for="title" data-i18n="listItem">Item</label>
-    <input id="title" type="text" list="stapleHints" autocomplete="off" required>
-    <datalist id="stapleHints"></datalist>
-    <label class="sh-label" for="qty" data-i18n="listQty">Qty</label>
-    <input id="qty" type="text" placeholder="1">
-    <label class="sh-check"><input type="checkbox" id="asStaple"> <span data-i18n="listAsStaple">Recurring staple</span></label>
-    <button class="sh-btn primary" type="submit" data-i18n="listAdd">Add</button>
+    <div class="add-row">
+      <div>
+        <label class="sh-label" for="title" data-i18n="listItem">Item</label>
+        <input id="title" type="text" list="stapleHints" autocomplete="off" required>
+        <datalist id="stapleHints"></datalist>
+      </div>
+      <div>
+        <label class="sh-label" for="qty" data-i18n="listQty">Qty</label>
+        <input id="qty" type="text" placeholder="1">
+      </div>
+      <div class="add-actions span-2">
+        <label class="sh-check"><input type="checkbox" id="asStaple"> <span data-i18n="listAsStaple">Recurring staple</span></label>
+        <button class="sh-btn primary" type="submit" data-i18n="listAdd">Add</button>
+      </div>
+    </div>
   </form>
 
-  <section class="sh-card">
-    <h2 data-i18n="listToBuy">To buy</h2>
-    <ul id="toBuy" class="list-rows"></ul>
-  </section>
-
-  <section class="sh-card">
-    <h2 data-i18n="listChecked">Checked</h2>
-    <ul id="checked" class="list-rows"></ul>
-    <button class="sh-btn" id="finishTrip" type="button" data-i18n="listFinishTrip">Finish trip / clear checked</button>
-  </section>
-
-  <section class="sh-card">
+  <section class="sh-card list-block">
     <h2 data-i18n="listStaples">Staples</h2>
     <div id="staples" class="staple-chips"></div>
   </section>
-
-  <div class="sh-actions">
-    <button class="sh-btn" id="shareBtn" type="button" data-i18n="listShare">Share</button>
-    <button class="sh-btn" id="importBtn" type="button" data-i18n="listImport">Import</button>
-  </div>
 
   <dialog id="shareDialog"></dialog>
   <dialog id="importDialog"></dialog>

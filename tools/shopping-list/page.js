@@ -10,7 +10,10 @@
     asStaple: document.getElementById('asStaple'),
     hints: document.getElementById('stapleHints'),
     toBuy: document.getElementById('toBuy'),
+    toBuyCount: document.getElementById('toBuyCount'),
     checked: document.getElementById('checked'),
+    checkedCount: document.getElementById('checkedCount'),
+    checkedWrap: document.getElementById('checkedWrap'),
     staples: document.getElementById('staples'),
     finish: document.getElementById('finishTrip'),
     shareBtn: document.getElementById('shareBtn'),
@@ -191,14 +194,27 @@
       return;
     }
     idle.forEach(function (item) {
-      var chip = document.createElement('button');
-      chip.type = 'button';
+      var chip = document.createElement('span');
       chip.className = 'staple-chip';
-      chip.textContent = item.title + (item.quantity ? ' \u00D7 ' + item.quantity : '');
-      chip.addEventListener('click', function () {
+      var add = document.createElement('button');
+      add.type = 'button';
+      add.className = 'staple-add';
+      add.textContent = item.title + (item.quantity ? ' \u00D7 ' + item.quantity : '');
+      add.addEventListener('click', function () {
         ListStore.activateStaple(item.id);
         render();
       });
+      var del = document.createElement('button');
+      del.type = 'button';
+      del.className = 'staple-x';
+      del.textContent = '\u00D7';
+      del.setAttribute('aria-label', t('listRemove') + ' ' + item.title);
+      del.addEventListener('click', function () {
+        ListStore.removeItem(item.id);
+        render();
+      });
+      chip.appendChild(add);
+      chip.appendChild(del);
       els.staples.appendChild(chip);
     });
   }
@@ -218,6 +234,11 @@
 
   function render() {
     var s = sections();
+    els.toBuyCount.textContent = s.toBuy.length ? String(s.toBuy.length) : '';
+    els.checkedCount.textContent = String(s.checked.length);
+    var prevChecked = Number(els.checkedWrap.dataset.count || '0');
+    if (s.checked.length > prevChecked) els.checkedWrap.open = true;
+    els.checkedWrap.dataset.count = String(s.checked.length);
     fillRows(els.toBuy, s.toBuy, 'toBuy', 'listEmptyToBuy');
     fillRows(els.checked, s.checked, 'checked', 'listEmptyChecked');
     renderStaples(s.staples);
