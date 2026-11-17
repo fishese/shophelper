@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0f766e">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Coupons">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="manifest" href="manifest.json">
+<title>Coupon Keeper</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header>
+  <span class="logo">🎟️</span>
+  <h1>Coupon Keeper</h1>
+  <span class="spacer"></span>
+  <button class="iconbtn" id="installBtn" style="display:none">⬇ Install</button>
+</header>
+
+<main>
+  <section id="view-list" class="view active">
+    <div id="banner"></div>
+    <div class="filters">
+      <input type="text" id="search" placeholder="Search…">
+      <select id="filterKind">
+        <option value="">All types</option>
+        <option value="coupon">Coupons</option>
+        <option value="gift">Gift cards</option>
+        <option value="loyalty">Loyalty</option>
+      </select>
+      <select id="filterCat"><option value="">All categories</option></select>
+      <select id="filterStatus">
+        <option value="active">Active</option>
+        <option value="all">All</option>
+        <option value="used">Used</option>
+        <option value="expired">Expired</option>
+      </select>
+    </div>
+    <div id="list"></div>
+  </section>
+
+  <section id="view-add" class="view">
+    <div class="seg">
+      <button type="button" id="modeScan" class="active">📷 Scan</button>
+      <button type="button" id="modeManual">✍️ Manual</button>
+    </div>
+
+    <div id="scanBox">
+      <div class="drop" id="drop">
+        <div class="big">🖼️</div>
+        <div>Tap to choose a coupon image</div>
+        <div class="hint">Coupon, gift card, or offer email — read on your device, nothing uploaded.</div>
+      </div>
+      <input type="file" id="file" accept="image/*" style="display:none">
+      <div class="progwrap" id="progwrap"><div class="progbar" id="progbar"></div></div>
+      <div id="ocrStatus"></div>
+      <img id="preview" alt="preview">
+    </div>
+
+    <form id="form" autocomplete="off">
+      <input type="hidden" id="f-id">
+      <div id="confirmNote" class="hint" style="display:none;color:var(--accent);margin-top:14px">
+        ✓ Read from your screenshot — please check and fix anything before saving.
+      </div>
+
+      <details id="imgPreviewWrap" style="display:none;margin-top:10px">
+        <summary style="cursor:pointer;color:var(--muted);font-size:13px">Show image</summary>
+        <img id="formImgPreview" alt="Coupon image" style="max-width:100%; border-radius:8px; border:1px solid var(--line); display:block; margin-top:8px;">
+      </details>
+      <label id="keepPhotoRow"><input type="checkbox" id="f-keepPhoto" checked> Save this photo with the item</label>
+
+      <details id="ocrRawWrap" style="display:none;margin-top:10px;margin-bottom:10px">
+        <summary style="cursor:pointer;color:var(--muted);font-size:13px">Show all text read from the image</summary>
+        <pre id="ocrRaw" style="white-space:pre-wrap;background:var(--card2);border:1px solid var(--line);border-radius:8px;padding:10px;font-size:12px;color:var(--text);max-height:220px;overflow:auto;margin-top:8px"></pre>
+      </details>
+
+      <label>Type</label>
+      <select id="f-kind">
+        <option value="coupon">Coupon / voucher</option>
+        <option value="gift">Gift card</option>
+        <option value="loyalty">Loyalty / membership</option>
+      </select>
+
+      <label>Store / brand *</label>
+      <input type="text" id="f-store" placeholder="e.g. Target" required>
+
+      <div class="row2">
+        <div>
+          <label>Value / discount</label>
+          <input type="text" id="f-value" placeholder="e.g. 20% off">
+        </div>
+        <div>
+          <label>Coupon code</label>
+          <input type="text" id="f-code" placeholder="e.g. SAVE20">
+        </div>
+      </div>
+
+      <div class="row2" id="balanceRow" style="display:none">
+        <div>
+          <label>Balance</label>
+          <input type="text" id="f-balance" placeholder="e.g. $120.00">
+        </div>
+        <div></div>
+      </div>
+
+      <div class="row2">
+        <div>
+          <label id="expLabel">Expiration date *</label>
+          <input type="date" id="f-exp" required>
+        </div>
+        <div>
+          <label>Minimum spend</label>
+          <input type="text" id="f-min" placeholder="e.g. $50">
+        </div>
+      </div>
+
+      <label>Category</label>
+      <input type="text" id="f-cat" list="catlist" placeholder="e.g. Groceries">
+      <datalist id="catlist"></datalist>
+
+      <label>Link / where to use</label>
+      <input type="text" id="f-link" placeholder="https://…  or  in-store">
+
+      <label>Barcode / QR value <span style="font-weight:400">(optional — show at the register)</span></label>
+      <input type="text" id="f-qr" placeholder="e.g. a code, URL, or membership number">
+      <label>Barcode type</label>
+      <select id="f-barcodeFmt">
+        <option value="auto">Auto</option>
+        <option value="QR">QR code</option>
+        <option value="DATAMATRIX">Data Matrix</option>
+        <option value="AZTEC">Aztec</option>
+        <option value="PDF417">PDF417</option>
+        <option value="CODE128">Code 128</option>
+        <option value="CODE39">Code 39</option>
+        <option value="CODE93">Code 93</option>
+        <option value="EAN13">EAN-13</option>
+        <option value="EAN8">EAN-8</option>
+        <option value="UPC">UPC-A</option>
+        <option value="CODABAR">Codabar</option>
+        <option value="ITF">ITF</option>
+      </select>
+      <div class="hint" id="qrDetected" style="display:none;color:var(--accent)">✓ Barcode detected in your screenshot.</div>
+
+      <label>Notes</label>
+      <textarea id="f-notes" placeholder="Anything else…"></textarea>
+
+      <div class="savebar">
+        <button type="button" class="btn ghost full" id="cancelEdit">Clear</button>
+        <button type="submit" class="btn primary full">💾 Save</button>
+      </div>
+    </form>
+  </section>
+
+  <section id="view-settings" class="view">
+    <div class="settings-card">
+      <h4>Scan languages</h4>
+      <p>Languages the screenshot reader recognizes. Turn off ones you don't use for faster, more accurate scans. The first scan in a new language downloads its data once (then works offline).</p>
+      <div id="langOpts"></div>
+    </div>
+
+    <div class="settings-card">
+      <h4>Reminder schedule</h4>
+      <p>Get reminded this many days before a coupon expires. Applies to calendar reminders, in-app alerts, and background notifications after you install the app.</p>
+      <div class="daychips" id="daychips"></div>
+      <div style="margin-top:12px;display:flex;gap:8px">
+        <input type="number" id="newDay" min="0" max="365" placeholder="days" style="max-width:110px">
+        <button class="btn ghost" id="addDay">+ Add</button>
+      </div>
+    </div>
+
+    <div class="settings-card">
+      <h4>App icon badge</h4>
+      <p>Show a red notification badge on the app icon for coupons expiring soon.</p>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input type="number" id="badgeHours" min="0" placeholder="48" style="max-width:110px">
+        <span class="hint">hours before expiration (0 to disable)</span>
+      </div>
+      <div class="hint" style="margin-top:8px">Requires a real app install (not a bookmark shortcut) and Notifications permission.</div>
+    </div>
+
+    <div class="settings-card">
+      <h4>Notifications</h4>
+      <p>Allow alerts when a coupon is due. After you <b>Install</b> the app, Android can also remind you while it's closed.</p>
+      <button class="btn primary" id="notifBtn">Enable notifications</button>
+      <div class="hint" id="notifState" style="margin-top:8px"></div>
+    </div>
+
+    <div class="settings-card">
+      <h4>Your data</h4>
+      <p>Everything stays on this device (IndexedDB, with a localStorage backup). Photos are stored only on this device. Nothing is uploaded. Safari can still wipe unused site data after 7 days unless you Add to Home Screen.</p>
+      <p class="hint" id="storageStatus" style="margin:8px 0 12px">Checking storage…</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn primary" id="persistBtn">Protect storage</button>
+        <button class="btn ghost" id="exportBtn">⬆ Export backup</button>
+        <button class="btn ghost" id="importBtn">⬇ Replace with backup</button>
+        <button class="btn ghost" id="mergeBtn">⇄ Merge backup</button>
+        <input type="file" id="importFile" accept="application/json" style="display:none">
+        <input type="file" id="mergeFile" accept="application/json" style="display:none">
+      </div>
+    </div>
+
+    <div class="settings-card">
+      <h4>Install as an app</h4>
+      <p><b>Android (Chrome):</b> Tap <b>⬇ Install</b> when it appears (or Chrome’s Install app). That installs a real app with no URL bar — not a Chrome shortcut. If you already added a shortcut that still shows the name and URL at the top, remove that icon and Install again.<br>
+      <b>iPhone / iPad (Safari):</b> Share (□↑) → <b>Add to Home Screen</b>.</p>
+    </div>
+    <div class="hint" style="text-align:center">Coupon Keeper · works offline · v2.3</div>
+    <div style="text-align:center; margin-top: 24px; font-size: 11px; opacity: 0.4;">
+      <a href="../" style="color: var(--muted); text-decoration: none;">0oo.fish.oo0</a>
+    </div>
+  </section>
+</main>
+
+<nav>
+  <button id="nav-list" class="active"><span class="ic">📋</span>List</button>
+  <button id="nav-add"><span class="ic">➕</span>Add</button>
+  <button id="nav-settings"><span class="ic">⚙️</span>Settings</button>
+</nav>
+
+<div class="toast" id="toast"></div>
+<div id="barcodeScanHost" style="position:absolute;left:-9999px;width:8px;height:8px;overflow:hidden"></div>
+
+<div id="qrModal">
+  <div id="qrClose">✕ Close</div>
+  <div id="qrBox">
+    <button type="button" id="qrBoxClose" class="qr-box-close" aria-label="Close">✕ Close</button>
+    <div id="qrStore"></div>
+    <div id="qrImgWrap">
+      <img id="qrImg" alt="Barcode">
+      <canvas id="barcodeCanvas"></canvas>
+      <div id="qrErr"></div>
+    </div>
+    <div id="qrVal"></div>
+    <div id="qrHint">Hold the screen up to the scanner. Turn your brightness up if it won't scan.</div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@2.0.4/dist/qrcode.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bwip-js@4.5.1/dist/bwip-js-min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

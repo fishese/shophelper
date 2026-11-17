@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en" data-sh-auto="1" data-sh-title="Tax &amp; Refund" data-sh-root="../..">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tax &amp; Refund · Shophelper</title>
+<link rel="stylesheet" href="../../shell.css?v=11">
+<link rel="stylesheet" href="../../tools-bridge.css?v=11">
+<script src="../../js/theme.js"></script>
+</head>
+<body>
+<main class="sh-page">
+  <div class="sh-pill sh-tabs" id="tabs">
+    <button type="button" id="tabEstimate" class="on" data-i18n="estimate">Estimate</button>
+    <button type="button" id="tabTracker" data-i18n="refunds">Refunds</button>
+  </div>
+  <section id="estimate">
+    <section class="sh-card">
+      <h2 data-i18n="shelfTax">Shelf tax</h2>
+      <label class="sh-label" for="price" data-i18n="price">Price</label>
+      <input id="price" class="sh-amount" inputmode="decimal" data-sh-kind="money" data-sh-currency-select="currency">
+      <div class="sh-row">
+        <div>
+          <label class="sh-label" for="currency" data-i18n="currency">Currency</label>
+          <select id="currency"></select>
+        </div>
+        <div>
+          <label class="sh-label" for="rate" data-i18n="taxPct">Tax %</label>
+          <input id="rate" inputmode="decimal" value="10">
+        </div>
+      </div>
+      <div class="sh-pill" style="margin-top:10px">
+        <button type="button" id="modeIn" class="on" data-i18n="taxInPrice">Tax in the price</button>
+        <button type="button" id="modeEx" data-i18n="taxOnTop">Tax added on top</button>
+      </div>
+      <div class="sh-split" style="margin-top:12px">
+        <div><div class="sh-k" data-i18n="tax">Tax</div><div class="sh-v" id="taxOut">—</div></div>
+        <div><div class="sh-k" data-i18n="checkout">Checkout</div><div class="sh-v" id="payOut">—</div></div>
+      </div>
+    </section>
+    <section class="sh-card">
+      <h2 data-i18n="touristRefund">Tourist refund estimate</h2>
+      <p class="sh-note" data-i18n="touristNote">Estimate only. The fee is a percent of the tax, in the style of a refund company. Eligibility, rounding, and the amount you actually receive can differ.</p>
+      <label class="sh-label" for="fee" data-i18n="feePct">Fee % of the tax</label>
+      <input id="fee" inputmode="decimal" placeholder="e.g. 20">
+      <label class="sh-label" for="fixed" data-i18n="fixedFee">Fixed fee, optional</label>
+      <input id="fixed" inputmode="decimal" placeholder="0">
+      <div class="sh-split" style="margin-top:12px">
+        <div><div class="sh-k" data-i18n="fee">Fee</div><div class="sh-v" id="feeOut">—</div></div>
+        <div><div class="sh-k" data-i18n="getBack">You would get back</div><div class="sh-v" id="netOut">—</div></div>
+      </div>
+      <p class="sh-note" id="worth"></p>
+      <button class="sh-btn primary" id="saveRefund" type="button" data-i18n="saveRefund">Save refund</button>
+    </section>
+  </section>
+  <section id="tracker" hidden>
+    <section class="sh-card">
+      <h2 data-i18n="refundTracker">Refund tracker</h2>
+      <div id="summary"></div>
+      <div id="refundList" class="sh-list"></div>
+    </section>
+  </section>
+</main>
+<script src="../../js/decimal.js"></script>
+<script src="../../js/units.js"></script>
+<script src="../../js/napkin.js"></script>
+<script src="../../js/mental.js"></script>
+<script src="../../js/tax.js"></script>
+<script src="../../js/prices.js"></script>
+<script src="../../js/results.js"></script>
+<script src="../../js/rates.js"></script>
+<script src="../../js/store.js"></script>
+<script src="../../js/i18n.js"></script>
+<script src="../../js/shell.js?v=11"></script>
+<script src="page.js"></script>
+</body>
+</html>

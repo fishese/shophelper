@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en" data-sh-auto="1" data-sh-title="Units" data-sh-root="../..">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Units · Shophelper</title>
+<link rel="stylesheet" href="../../shell.css?v=11">
+<link rel="stylesheet" href="../../tools-bridge.css?v=11">
+<script src="../../js/theme.js"></script>
+</head>
+<body>
+<main class="sh-page">
+  <section class="sh-card">
+    <div class="sh-pill sh-tabs" id="cats" role="tablist" aria-label="Unit type"></div>
+    <label class="sh-label" for="amount" data-i18n="amount">Amount</label>
+    <input id="amount" class="sh-amount" inputmode="decimal" data-sh-kind="quantity" data-sh-unit-select="fromUnit" autocomplete="off">
+    <div class="sh-row">
+      <div>
+        <label class="sh-label" for="fromUnit" data-i18n="from">From</label>
+        <select id="fromUnit"></select>
+      </div>
+      <button class="sh-btn" id="swap" type="button" style="flex:0 0 44px; align-self:end">↔</button>
+      <div>
+        <label class="sh-label" for="toUnit" data-i18n="to">To</label>
+        <select id="toUnit"></select>
+      </div>
+    </div>
+    <p class="sh-k" data-i18n="result">Result</p>
+    <p class="sh-result" id="result">—</p>
+    <p class="sh-note" data-i18n="unitsNote">Weight and volume stay separate. A bottle's millilitres are not turned into grams unless you already know the density, and this tool does not guess it.</p>
+  </section>
+</main>
+<script src="../../js/decimal.js"></script>
+<script src="../../js/units.js"></script>
+<script src="../../js/napkin.js"></script>
+<script src="../../js/mental.js"></script>
+<script src="../../js/tax.js"></script>
+<script src="../../js/prices.js"></script>
+<script src="../../js/results.js"></script>
+<script src="../../js/rates.js"></script>
+<script src="../../js/store.js"></script>
+<script src="../../js/i18n.js"></script>
+<script src="../../js/shell.js?v=11"></script>
+<script src="page.js"></script>
+</body>
+</html>

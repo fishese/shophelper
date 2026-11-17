@@ -1,0 +1,200 @@
+/* Map legacy tool palettes onto Shophelper light / AMOLED dark tokens. */
+
+body.sh-framed {
+  --bg: var(--sh-bg) !important;
+  --panel: var(--sh-card) !important;
+  --panel2: var(--sh-bg-2) !important;
+  --line: var(--sh-line) !important;
+  --inset: var(--sh-bg) !important;
+  --inset-rgb: 244, 244, 245;
+  --text: var(--sh-ink) !important;
+  --muted: var(--sh-muted) !important;
+  --accent: var(--sh-accent) !important;
+  --good: var(--sh-good) !important;
+  --warn: var(--sh-warn) !important;
+  --bad: var(--sh-bad) !important;
+  --onAccent: var(--sh-on) !important;
+  --card: var(--sh-card) !important;
+  --card2: var(--sh-bg-2) !important;
+  --accent2: var(--sh-accent-2) !important;
+}
+
+html[data-sh-theme="dark"] body.sh-framed {
+  --inset-rgb: 0, 0, 0;
+}
+
+body.sh-framed {
+  background: var(--sh-bg) !important;
+  color: var(--sh-ink) !important;
+}
+
+/* Cartulator: hide local theme/lang; keep its layout. */
+body.sh-framed .apphead .right { display: none !important; }
+body.sh-framed .apphead { margin-bottom: 10px; }
+
+/* Legacy tools (no .sh-page): keep content off the screen edges. */
+body.sh-framed:not(:has(.sh-page)) {
+  padding-left: 16px !important;
+  padding-right: 16px !important;
+}
+/* Deal Checker only had Tailwind p-1.5 (~6px); give it room. */
+body.sh-framed.min-h-screen {
+  padding-left: 16px !important;
+  padding-right: 16px !important;
+}
+
+/* Deal price field uses a flex $ prefix; keep inputs inside from shell min-height blowouts. */
+body.sh-framed #app input[data-sh-kind="money"] {
+  min-height: 44px;
+}
+
+/* Coupons header sits under floating shell bar; drop legacy teal gradient. */
+body.sh-framed > header:not(.sh-head) {
+  position: sticky;
+  top: 0;
+  background: var(--sh-card) !important;
+  background-image: none !important;
+  border-bottom: 1px solid var(--sh-line);
+  color: var(--sh-ink);
+  z-index: 20;
+  box-shadow: none !important;
+}
+body.sh-framed > header:not(.sh-head) h1,
+body.sh-framed > header:not(.sh-head) .logo {
+  color: var(--sh-ink) !important;
+}
+body.sh-framed > header:not(.sh-head) .iconbtn {
+  background: var(--sh-bg) !important;
+  color: var(--sh-ink) !important;
+  border: 1px solid var(--sh-line);
+}
+
+/* Deal Checker: neutralize indigo/zinc palette toward shell tokens. */
+body.sh-framed #app,
+body.sh-framed.min-h-screen {
+  background: var(--sh-bg) !important;
+  color: var(--sh-ink) !important;
+}
+body.sh-framed .bg-white,
+body.sh-framed .bg-white\/80,
+body.sh-framed .bg-white\/90,
+body.sh-framed .bg-white\/95,
+body.sh-framed .bg-zinc-50,
+body.sh-framed .bg-zinc-100,
+body.sh-framed .bg-slate-50 {
+  background-color: var(--sh-card) !important;
+  color: var(--sh-ink) !important;
+}
+body.sh-framed .text-zinc-800,
+body.sh-framed .text-zinc-900,
+body.sh-framed .text-indigo-900,
+body.sh-framed .text-slate-600,
+body.sh-framed .text-slate-400 {
+  color: var(--sh-ink) !important;
+}
+body.sh-framed .text-zinc-400,
+body.sh-framed .text-zinc-500,
+body.sh-framed .text-zinc-600,
+body.sh-framed .text-zinc-700 {
+  color: var(--sh-muted) !important;
+}
+body.sh-framed .text-indigo-600,
+body.sh-framed .text-indigo-700,
+body.sh-framed .border-indigo-600,
+body.sh-framed .bg-indigo-600,
+body.sh-framed .hover\:bg-indigo-700:hover,
+body.sh-framed .focus\:text-indigo-700:focus,
+body.sh-framed .focus\:border-indigo-500:focus {
+  color: var(--sh-accent) !important;
+}
+body.sh-framed .focus\:border-indigo-500:focus,
+body.sh-framed .focus\:ring-indigo-500:focus,
+body.sh-framed .focus\:ring-2:focus {
+  border-color: var(--sh-accent) !important;
+  --tw-ring-color: var(--sh-accent) !important;
+}
+body.sh-framed .bg-indigo-600,
+body.sh-framed button.bg-indigo-600 {
+  background-color: var(--sh-accent) !important;
+  color: var(--sh-on) !important;
+  border-color: var(--sh-accent) !important;
+}
+body.sh-framed .border-zinc-200,
+body.sh-framed .border-zinc-300,
+body.sh-framed .border-slate-300,
+body.sh-framed .border-indigo-100,
+body.sh-framed .border-indigo-200 {
+  border-color: var(--sh-line) !important;
+}
+body.sh-framed .bg-indigo-50,
+body.sh-framed .bg-indigo-50\/80,
+body.sh-framed .bg-indigo-100 {
+  background-color: color-mix(in srgb, var(--sh-accent) 14%, var(--sh-card)) !important;
+  color: var(--sh-ink) !important;
+}
+body.sh-framed .bg-emerald-50,
+body.sh-framed .bg-emerald-100,
+body.sh-framed .bg-emerald-100\/80,
+body.sh-framed .bg-emerald-200\/60 {
+  background-color: color-mix(in srgb, var(--sh-good) 18%, var(--sh-card)) !important;
+}
+body.sh-framed .border-emerald-200,
+body.sh-framed .border-emerald-300,
+body.sh-framed .border-emerald-400,
+body.sh-framed .border-emerald-500,
+body.sh-framed .ring-emerald-400 {
+  border-color: var(--sh-good) !important;
+  --tw-ring-color: var(--sh-good) !important;
+}
+body.sh-framed .text-emerald-600,
+body.sh-framed .text-emerald-700,
+body.sh-framed .text-emerald-800,
+body.sh-framed .text-emerald-900,
+body.sh-framed .bg-emerald-600 {
+  color: var(--sh-good) !important;
+}
+body.sh-framed .bg-emerald-600 {
+  background-color: var(--sh-good) !important;
+  color: #fff !important;
+}
+body.sh-framed .bg-red-50,
+body.sh-framed .text-red-600,
+body.sh-framed .border-red-100 {
+  background-color: color-mix(in srgb, var(--sh-bad) 12%, var(--sh-card)) !important;
+  color: var(--sh-bad) !important;
+  border-color: color-mix(in srgb, var(--sh-bad) 30%, var(--sh-line)) !important;
+}
+body.sh-framed .bg-amber-50,
+body.sh-framed .border-amber-200,
+body.sh-framed .border-amber-300,
+body.sh-framed .text-amber-700,
+body.sh-framed .text-amber-800 {
+  background-color: var(--sh-warn-bg) !important;
+  border-color: color-mix(in srgb, var(--sh-warn) 35%, var(--sh-line)) !important;
+  color: var(--sh-warn) !important;
+}
+body.sh-framed .sh-hide-local-lang {
+  display: none !important;
+}
+
+/* Soften Deal Checker page background gradient. */
+body.sh-framed {
+  background-image: none !important;
+}
+
+/* Coupons bottom nav sits above results bar. */
+body.sh-framed nav {
+  background: var(--sh-card) !important;
+  border-top-color: var(--sh-line) !important;
+  left: 8px !important;
+  right: 8px !important;
+  border-radius: 14px 14px 0 0;
+  border-left: 1px solid var(--sh-line);
+  border-right: 1px solid var(--sh-line);
+}
+
+/* Deal Checker sticky tool chrome: keep a little air under the floating shell head. */
+body.sh-framed #app > .bg-white.rounded-xl,
+body.sh-framed #app > .flex.flex-wrap.justify-between {
+  margin-top: 2px;
+}

@@ -1,0 +1,11 @@
+{
+  "appId": "com.fishese.shophelper",
+  "appName": "Shophelper",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https"
+  },
+  "android": {
+    "backgroundColor": "#000000"
+  }
+}

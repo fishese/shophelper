@@ -1,0 +1,12 @@
+{
+  "name": "Shophelper",
+  "short_name": "Shophelper",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f3efe4",
+  "theme_color": "#0f5c56",
+  "icons": [
+    { "src": "icons/app.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

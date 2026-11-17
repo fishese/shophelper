@@ -1,0 +1,18 @@
+{
+  "name": "shophelper",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Shophelper PWA + Capacitor Android wrapper",
+  "scripts": {
+    "sync:www": "node scripts/sync-www.mjs",
+    "cap:sync": "npm run sync:www && npx cap sync android",
+    "cap:open": "npx cap open android",
+    "android:build": "cd android && gradlew.bat assembleDebug",
+    "android:apk": "npm run cap:sync && npm run android:build"
+  },
+  "devDependencies": {
+    "@capacitor/android": "^7.0.0",
+    "@capacitor/cli": "^7.0.0",
+    "@capacitor/core": "^7.0.0"
+  }
+}

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en" data-sh-auto="1" data-sh-home="1" data-sh-title="Shophelper" data-sh-root=".">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f3efe4">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Shophelper</title>
+<link rel="icon" href="icons/app.svg" type="image/svg+xml">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="shell.css?v=11">
+<link rel="stylesheet" href="tools-bridge.css?v=11">
+<script src="js/theme.js"></script>
+</head>
+<body class="sh-app sh-home">
+<main class="sh-page">
+  <p class="sh-lead" data-i18n="toolsLead">Separate tools for a shop run. Totals sit in the bar and paste into the box you are typing in.</p>
+  <nav class="sh-grid" aria-label="Tools">
+    <a class="sh-tool" href="tools/cartulator/index.html"><span class="sh-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16l-1.2 11.2a2 2 0 0 1-2 1.8H7.2a2 2 0 0 1-2-1.8L4 6z"/><path d="M8 6l1.2-2h5.6L16 6"/><path d="M9 11h6"/></svg></span><strong data-i18n="toolCart">Cartulator</strong><span data-i18n="toolCartDesc">Tally a trip and supermarket deals.</span></a>
+    <a class="sh-tool" href="tools/coupons/index.html"><span class="sh-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8a2 2 0 0 0 2-2h12a2 2 0 0 0 2 2v2a2 2 0 0 1 0 4v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4V8z"/><path d="M12 7v10"/></svg></span><strong data-i18n="toolCoupons">Coupons</strong><span data-i18n="toolCouponsDesc">Coupons, gift cards, and loyalty cards.</span></a>
+    <a class="sh-tool" href="tools/deals/index.html"><span class="sh-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V9"/><path d="M10 19V5"/><path d="M16 19v-7"/><path d="M20 19H3"/><path d="M18 5l2 2-2 2"/></svg></span><strong data-i18n="toolDeals">Deal Checker</strong><span data-i18n="toolDealsDesc">Compare price per unit.</span></a>
+    <a class="sh-tool" href="tools/units/index.html"><span class="sh-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"/><path d="M7 7v3M12 7v4M17 7v3"/><path d="M5 20l5-9h4l5 9"/><path d="M9 20h6"/></svg></span><strong data-i18n="toolUnits">Units</strong><span data-i18n="toolUnitsDesc">Weight, volume, length, temperature, area.</span></a>
+    <a class="sh-tool" href="tools/currency/index.html"><span class="sh-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><path d="M12 7v10"/><path d="M9.5 9.5c.5-1 3.5-1 4 1s-4 1.5-4 3 3.5 2 4.5 1"/></svg></span><strong data-i18n="toolCurrency">Currency</strong><span data-i18n="toolCurrencyDesc">Rate, head estimate, and a scribble pad.</span></a>
+    <a class="sh-tool" href="tools/tax/index.html"><span class="sh-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/></svg></span><strong data-i18n="toolTax">Tax &amp; Refund</strong><span data-i18n="toolTaxDesc">Shelf tax, refund estimate, and tracker.</span></a>
+    <a class="sh-tool" href="tools/prices/index.html"><span class="sh-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l8-8h7v7l-8 8-7-7z"/><circle cx="16" cy="8" r="1.2" fill="currentColor" stroke="none"/></svg></span><strong data-i18n="toolPrices">Prices</strong><span data-i18n="toolPricesDesc">Usual and best price for things you buy.</span></a>
+  </nav>
+  <details class="sh-card sh-home-settings">
+    <summary><strong data-i18n="settings">Settings and backup</strong></summary>
+    <label class="sh-label" for="homeCurrency" data-i18n="homeCurrency">Home currency</label>
+    <select id="homeCurrency"></select>
+    <label class="sh-label" for="theme" data-i18n="theme">Theme</label>
+    <select id="theme">
+      <option value="light" data-i18n="themeLightOpt">Light</option>
+      <option value="dark" data-i18n="themeDarkOpt">AMOLED dark</option>
+    </select>
+    <div class="sh-actions">
+      <button class="sh-btn" id="exportJson" type="button" data-i18n="exportBackup">Export backup</button>
+      <button class="sh-btn" id="exportCsv" type="button" data-i18n="exportCsv">Export prices CSV</button>
+      <label class="sh-btn"><span data-i18n="importBackup">Import backup</span><input id="importFile" type="file" accept="application/json" hidden></label>
+    </div>
+    <p class="sh-note" id="importPreview"></p>
+    <p class="sh-note" data-i18n="backupNote">Backup includes prices, refunds, rates, and settings. Cartulator, Coupons, and Deal Checker keep their own saved data.</p>
+  </details>
+</main>
+<script src="js/decimal.js"></script>
+<script src="js/units.js"></script>
+<script src="js/napkin.js"></script>
+<script src="js/mental.js"></script>
+<script src="js/tax.js"></script>
+<script src="js/prices.js"></script>
+<script src="js/results.js"></script>
+<script src="js/rates.js"></script>
+<script src="js/store.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/shell.js?v=11"></script>
+<script src="js/home.js"></script>
+<script>
+if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0) {
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('sw.js').catch(function () {});
+  });
+}
+</script>
+</body>
+</html>
