@@ -182,8 +182,8 @@ body.sh-framed {
   background-image: none !important;
 }
 
-/* Coupons bottom nav sits above results bar. */
-body.sh-framed nav {
+/* Coupons bottom nav sits above results bar. Home tool grid stays transparent. */
+body.sh-framed nav:not(.sh-grid) {
   background: var(--sh-card) !important;
   border-top-color: var(--sh-line) !important;
   left: 8px !important;
@@ -192,6 +192,7 @@ body.sh-framed nav {
   border-left: 1px solid var(--sh-line);
   border-right: 1px solid var(--sh-line);
 }
+nav.sh-grid { background: transparent; }
 
 /* Deal Checker sticky tool chrome: keep a little air under the floating shell head. */
 body.sh-framed #app > .bg-white.rounded-xl,

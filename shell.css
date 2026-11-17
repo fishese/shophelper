@@ -124,6 +124,7 @@ button { cursor: pointer; }
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
   gap: 12px;
+  background: transparent;
 }
 .sh-tool {
   display: flex; flex-direction: column; gap: 10px;
