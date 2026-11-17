@@ -123,6 +123,7 @@
         if (input.quantity != null) match.quantity = quantity;
         if (input.note != null) match.note = note;
         match.title = title || match.title;
+        match.sort = maxSort(list.items) + 1;
         return match;
       }
       var item = {

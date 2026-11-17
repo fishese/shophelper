@@ -364,6 +364,24 @@ test('list addItem reactivates single clear title match', () => {
   assert.strictEqual(b.quantity, '12');
 });
 
+test('list addItem reactivation appends sort to end of to-buy', () => {
+  const mem = { data: null };
+  const api = listStore.withStorage({
+    getItem: () => mem.data,
+    setItem: (_k, v) => { mem.data = v; }
+  });
+  api.save(api.defaults());
+  const a = api.addItem({ title: 'Eggs', isRecurring: true });
+  const b = api.addItem({ title: 'Bread', isRecurring: false });
+  api.toggleChecked(a.id, true);
+  api.finishTrip(); // eggs → idle staple; bread stays active
+  const reactivated = api.addItem({ title: 'Eggs' });
+  assert.strictEqual(reactivated.id, a.id);
+  assert.strictEqual(reactivated.isActive, true);
+  assert.strictEqual(reactivated.isChecked, false);
+  assert.ok(reactivated.sort > b.sort);
+});
+
 test('list finishTrip deletes one-offs and idles staples', () => {
   const mem = { data: null };
   const api = listStore.withStorage({
