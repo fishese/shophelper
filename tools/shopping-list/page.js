@@ -228,6 +228,7 @@
   /* ---------- dialogs (empty shells; Task 4 fills them) ---------- */
 
   var disposeBack = { shareDialog: null, importDialog: null };
+  var closeHooks = { shareDialog: null, importDialog: null };
 
   function closeDialog(dlg) {
     if (!dlg) return;
@@ -236,6 +237,7 @@
     }
     var key = dlg.id;
     if (disposeBack[key]) { disposeBack[key](); disposeBack[key] = null; }
+    if (closeHooks[key]) { var hook = closeHooks[key]; closeHooks[key] = null; hook(); }
   }
 
   function openDialog(dlg) {
@@ -258,30 +260,337 @@
     dlg.addEventListener('click', function (e) { if (e.target === dlg) closeDialog(dlg); });
   }
 
-  function stubDialog(dlg, titleKey) {
-    dlg.innerHTML = '';
-    var h = document.createElement('h3');
-    h.textContent = t(titleKey);
-    var note = document.createElement('p');
-    note.className = 'sh-note';
-    note.textContent = t('listComing');
-    var actions = document.createElement('div');
-    actions.className = 'sh-actions';
-    var close = document.createElement('button');
-    close.type = 'button';
-    close.className = 'sh-btn';
-    close.textContent = t('listClose');
-    close.addEventListener('click', function () { closeDialog(dlg); });
-    actions.appendChild(close);
-    dlg.appendChild(h);
-    dlg.appendChild(note);
-    dlg.appendChild(actions);
+  /* ---------- share / import ---------- */
+
+  var Codec = window.ShophelperListCodec;
+  var SCAN_HOST_ID = 'importScanHost';
+
+  function mk(tag, cls, text) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
   }
 
-  // Task 4 replaces these to build real Share / Import UIs.
+  function mkBtn(label, onClick, cls) {
+    var b = mk('button', 'sh-btn' + (cls ? ' ' + cls : ''), label);
+    b.type = 'button';
+    b.addEventListener('click', onClick);
+    return b;
+  }
+
+  function closeBtn(dlg) { return mkBtn(t('listClose'), function () { closeDialog(dlg); }); }
+
+  // Active items only (to buy + checked); idle staples and `s` are never shared.
+  function buildSharePayload() {
+    var list = ListStore.activeList();
+    var rows = (list.items || []).filter(function (i) { return i.isActive; }).sort(bySort).map(function (i) {
+      var row = { t: i.title };
+      if (i.quantity) row.q = i.quantity;
+      row.r = i.isRecurring ? 1 : 0;
+      row.c = i.isChecked ? 1 : 0;
+      row.o = Number(i.sort) || 0;
+      return row;
+    });
+    return { v: 1, n: list.name, i: rows };
+  }
+
+  function copyText(text, field) {
+    var done = function () { toast(t('listLinkCopied')); };
+    var fallback = function () {
+      try {
+        if (field) { field.focus(); field.select(); }
+        if (document.execCommand && document.execCommand('copy')) { done(); return; }
+      } catch (err) {}
+      toast(t('listCopyFailed'));
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, fallback);
+    } else {
+      fallback();
+    }
+  }
+
+  function qrDataUrl(text) {
+    if (typeof window.qrcode !== 'function') return { err: 'listShareNoLib' };
+    try {
+      var qr = window.qrcode(0, 'M');
+      qr.addData(text);
+      qr.make();
+      return { url: qr.createDataURL(6, 8) };
+    } catch (err) {
+      return { err: 'listShareQrTooBig' };
+    }
+  }
+
+  function openShare() {
+    var dlg = els.shareDialog;
+    dlg.innerHTML = '';
+    dlg.appendChild(mk('h3', null, t('listShareTitle')));
+    var payload = buildSharePayload();
+    var actions = mk('div', 'sh-actions');
+
+    if (!payload.i.length) {
+      dlg.appendChild(mk('p', 'sh-note', t('listShareEmpty')));
+      actions.appendChild(closeBtn(dlg));
+      dlg.appendChild(actions);
+      openDialog(dlg);
+      return;
+    }
+
+    var link = '';
+    try {
+      link = Codec.buildUrl(Codec.encodeShare(payload), location.href.split('#')[0]);
+    } catch (err) {
+      dlg.appendChild(mk('p', 'sh-note', t('listImportBad')));
+      actions.appendChild(closeBtn(dlg));
+      dlg.appendChild(actions);
+      openDialog(dlg);
+      return;
+    }
+
+    dlg.appendChild(mk('p', 'sh-note', t('listShareHint')));
+    var qr = qrDataUrl(link);
+    if (qr.url) {
+      var img = mk('img', 'share-qr');
+      img.alt = 'QR';
+      img.src = qr.url;
+      dlg.appendChild(img);
+    } else {
+      dlg.appendChild(mk('p', 'sh-note', t(qr.err)));
+    }
+
+    var field = mk('textarea', 'share-link');
+    field.readOnly = true;
+    field.rows = 3;
+    field.value = link;
+    field.setAttribute('aria-label', t('listCopyLink'));
+    field.addEventListener('focus', function () { field.select(); });
+    dlg.appendChild(field);
+
+    actions.appendChild(mkBtn(t('listCopyLink'), function () { copyText(link, field); }, 'primary'));
+    actions.appendChild(mkBtn(t('listShareNative'), function () {
+      if (navigator.share) {
+        navigator.share({ title: payload.n || t('toolList'), url: link }).catch(function () {});
+      } else {
+        copyText(link, field);
+      }
+    }));
+    actions.appendChild(closeBtn(dlg));
+    dlg.appendChild(actions);
+    openDialog(dlg);
+  }
+
+  function stripShareHash() {
+    if (Codec && Codec.parseUrl(location.hash) && window.history && history.replaceState) {
+      try { history.replaceState(null, '', location.pathname + location.search); } catch (err) {}
+    }
+  }
+
+  function decodeImageFile(file) {
+    return new Promise(function (resolve) {
+      var url = URL.createObjectURL(file);
+      var done = function (text) { URL.revokeObjectURL(url); resolve(text || null); };
+      var viaHtml5 = function () {
+        if (typeof window.Html5Qrcode !== 'function') { done(null); return; }
+        var reader;
+        try { reader = new window.Html5Qrcode(SCAN_HOST_ID, { verbose: false }); } catch (err) { done(null); return; }
+        reader.scanFile(file, false).then(function (text) {
+          try { reader.clear(); } catch (err) {}
+          done(text);
+        }, function () { done(null); });
+      };
+      if (typeof window.jsQR !== 'function') { viaHtml5(); return; }
+      var img = new Image();
+      img.onload = function () {
+        try {
+          var scale = Math.min(1200 / img.naturalWidth, 1) || 1;
+          var cv = document.createElement('canvas');
+          cv.width = Math.round(img.naturalWidth * scale);
+          cv.height = Math.round(img.naturalHeight * scale);
+          var ctx = cv.getContext('2d');
+          ctx.drawImage(img, 0, 0, cv.width, cv.height);
+          var d = ctx.getImageData(0, 0, cv.width, cv.height);
+          var code = window.jsQR(d.data, cv.width, cv.height, { inversionAttempts: 'attemptBoth' });
+          if (code && code.data) { done(code.data); return; }
+        } catch (err) {}
+        viaHtml5();
+      };
+      img.onerror = function () { done(null); };
+      img.src = url;
+    });
+  }
+
+  function openImport(prefill) {
+    var dlg = els.importDialog;
+    dlg.innerHTML = '';
+    dlg.appendChild(mk('h3', null, t('listImportTitle')));
+
+    var pending = null; // { payload, rows }
+    var scanner = null;
+    var scanStart = null;
+    var lastBadScan = '';
+
+    var field = mk('textarea', 'import-field');
+    field.rows = 3;
+    field.placeholder = t('listImportPaste');
+    field.setAttribute('aria-label', t('listImportPaste'));
+    var host = mk('div', 'import-host');
+    host.id = SCAN_HOST_ID;
+    var previewBox = mk('div');
+    var msg = mk('p', 'sh-note');
+    msg.setAttribute('role', 'status');
+    var mergeBtn = mkBtn(t('listImportMerge'), function () { apply('merge'); }, 'primary');
+    var replaceBtn = mkBtn(t('listImportReplace'), function () { apply('replace'); });
+    mergeBtn.disabled = true;
+    replaceBtn.disabled = true;
+
+    function stopScan() {
+      var s = scanner, started = scanStart;
+      scanner = null;
+      scanStart = null;
+      scanBtn.textContent = t('listImportScan');
+      if (!s) return;
+      var cleanup = function () {
+        var p;
+        try { p = s.stop(); } catch (err) { p = null; }
+        Promise.resolve(p).catch(function () {}).then(function () { try { s.clear(); } catch (err) {} });
+      };
+      if (started) started.then(cleanup, function () {}); else cleanup();
+    }
+
+    function setPending(p, message) {
+      pending = p;
+      previewBox.innerHTML = '';
+      mergeBtn.disabled = !p || !p.rows.length;
+      replaceBtn.disabled = !p || !p.rows.length;
+      msg.textContent = message || '';
+      if (!p) return;
+      var head = mk('p', null, (p.payload.n ? String(p.payload.n) + ' \u00B7 ' : '') + p.rows.length + ' ' + t('listImportItems'));
+      head.style.fontWeight = '650';
+      previewBox.appendChild(head);
+      var ul = mk('ul', 'import-preview');
+      p.rows.forEach(function (row) {
+        var li = mk('li', null, String(row.t) + (row.q ? ' \u00D7 ' + row.q : ''));
+        if (row.c) li.style.textDecoration = 'line-through';
+        ul.appendChild(li);
+      });
+      previewBox.appendChild(ul);
+    }
+
+    // Returns true when the text decoded to a usable payload.
+    function tryDecode(text, silent) {
+      var payload = null;
+      try { payload = Codec.decodeShare(text); } catch (err) { payload = null; }
+      if (!payload) {
+        setPending(null, silent ? '' : t('listImportBad'));
+        return false;
+      }
+      var rows = payload.i.filter(function (r) { return r && typeof r.t === 'string' && r.t.trim(); });
+      setPending({ payload: payload, rows: rows }, rows.length ? '' : t('listImportEmpty'));
+      return true;
+    }
+
+    function apply(mode) {
+      if (!pending || !pending.rows.length) return;
+      if (mode === 'replace' && !window.confirm(t('listImportReplaceConfirm'))) return;
+      if (mode === 'replace') ListStore.importReplace(pending.rows);
+      else ListStore.importMerge(pending.rows);
+      render();
+      toast(t(mode === 'replace' ? 'listImportReplaced' : 'listImportMerged'));
+      closeDialog(dlg);
+    }
+
+    var previewBtn = mkBtn(t('listImportPreview'), function () {
+      if (!field.value.trim()) { setPending(null, ''); return; }
+      tryDecode(field.value, false);
+    });
+    field.addEventListener('input', function () {
+      if (field.value.trim()) tryDecode(field.value, true); else setPending(null, '');
+    });
+
+    var scanBtn = mkBtn(t('listImportScan'), function () {
+      if (scanner) { stopScan(); return; }
+      if (typeof window.Html5Qrcode !== 'function') { msg.textContent = t('listImportNoLib'); return; }
+      try {
+        var s = new window.Html5Qrcode(SCAN_HOST_ID, { verbose: false });
+        scanner = s;
+        scanBtn.textContent = t('listImportStopScan');
+        scanStart = s.start({ facingMode: 'environment' }, { fps: 10, qrbox: { width: 220, height: 220 } }, function (text) {
+          if (scanner !== s) return;
+          if (tryDecode(text, true)) {
+            field.value = text;
+            stopScan();
+          } else if (text !== lastBadScan) {
+            lastBadScan = text;
+            msg.textContent = t('listImportBad');
+          }
+        }, function () {});
+        scanStart.catch(function () {
+          if (scanner === s) {
+            scanner = null;
+            scanStart = null;
+            scanBtn.textContent = t('listImportScan');
+            try { s.clear(); } catch (err) {}
+          }
+          msg.textContent = t('listImportCamFail');
+        });
+      } catch (err) {
+        scanner = null;
+        scanStart = null;
+        scanBtn.textContent = t('listImportScan');
+        msg.textContent = t('listImportCamFail');
+      }
+    });
+
+    var fileLabel = mk('label', 'sh-label', t('listImportFile'));
+    var file = mk('input');
+    file.type = 'file';
+    file.accept = 'image/*';
+    fileLabel.htmlFor = 'importFile';
+    file.id = 'importFile';
+    file.addEventListener('change', function () {
+      var f = file.files && file.files[0];
+      if (!f) return;
+      decodeImageFile(f).then(function (text) {
+        file.value = '';
+        if (!text) { setPending(null, t('listImportNoQr')); return; }
+        field.value = text;
+        tryDecode(text, false);
+      });
+    });
+
+    dlg.appendChild(field);
+    var row1 = mk('div', 'sh-actions');
+    row1.appendChild(previewBtn);
+    row1.appendChild(scanBtn);
+    dlg.appendChild(row1);
+    dlg.appendChild(host);
+    dlg.appendChild(fileLabel);
+    dlg.appendChild(file);
+    dlg.appendChild(msg);
+    dlg.appendChild(previewBox);
+    var row2 = mk('div', 'sh-actions');
+    row2.appendChild(mergeBtn);
+    row2.appendChild(replaceBtn);
+    row2.appendChild(closeBtn(dlg));
+    dlg.appendChild(row2);
+
+    closeHooks.importDialog = function () {
+      stopScan();
+      stripShareHash();
+    };
+
+    if (prefill) {
+      field.value = prefill;
+      tryDecode(prefill, false);
+    }
+    openDialog(dlg);
+  }
+
   var handlers = {
-    share: function () { stubDialog(els.shareDialog, 'listShareTitle'); openDialog(els.shareDialog); },
-    importer: function () { stubDialog(els.importDialog, 'listImportTitle'); openDialog(els.importDialog); }
+    share: openShare,
+    importer: function () { openImport(''); }
   };
 
   wireDialog(els.shareDialog);
@@ -333,4 +642,15 @@
   };
 
   render();
+
+  // Opened via a shared link: show the import preview (hash is stripped once dismissed/applied).
+  function openFromHash() {
+    var incoming = Codec && Codec.parseUrl(location.hash);
+    if (incoming) {
+      if (els.importDialog.open) closeDialog(els.importDialog);
+      openImport(incoming);
+    }
+  }
+  window.addEventListener('hashchange', openFromHash);
+  openFromHash();
 })();

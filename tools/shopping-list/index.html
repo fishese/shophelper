@@ -42,6 +42,12 @@
   }
   #shareDialog::backdrop, #importDialog::backdrop { background: rgba(0, 0, 0, .55); }
   #shareDialog h3, #importDialog h3 { margin: 0 0 8px; }
+  .share-qr { display: block; margin: 8px auto; width: min(280px, 100%); height: auto; image-rendering: pixelated; background: #fff; border-radius: 8px; }
+  .share-link { width: 100%; font-size: .8rem; }
+  .import-field { width: 100%; min-height: 64px; font-size: .85rem; }
+  .import-host { width: 100%; max-width: 320px; margin: 8px auto; }
+  .import-preview { list-style: none; margin: 8px 0; padding: 0; max-height: 28vh; overflow: auto; }
+  .import-preview li { padding: 4px 0; border-bottom: 1px solid var(--sh-line); overflow-wrap: anywhere; }
 </style>
 </head>
 <body>
@@ -81,6 +87,9 @@
   <dialog id="importDialog"></dialog>
 </main>
 <script src="https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@2.0.4/dist/qrcode.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script src="../../js/decimal.js"></script>
 <script src="../../js/units.js"></script>
 <script src="../../js/napkin.js"></script>
