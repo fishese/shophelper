@@ -322,6 +322,116 @@ test('rate parser keeps the date and does not call a cached rate live', () => {
   assert.strictEqual(label.stale, true);
 });
 
+const listStore = require('../js/list-store');
+const listCodec = require('../js/list-codec');
+
+test('list store defaults one empty list', () => {
+  const d = listStore.defaults();
+  assert.strictEqual(d.version, 1);
+  assert.ok(d.activeListId);
+  assert.strictEqual(d.lists.length, 1);
+  assert.deepStrictEqual(d.lists[0].items, []);
+});
+
+test('list addItem inserts active unchecked', () => {
+  const mem = { data: null };
+  const api = listStore.withStorage({
+    getItem: () => mem.data,
+    setItem: (_k, v) => { mem.data = v; }
+  });
+  api.save(api.defaults());
+  const item = api.addItem({ title: ' Milk ', quantity: '2', isRecurring: false });
+  assert.strictEqual(item.title, 'Milk');
+  assert.strictEqual(item.isActive, true);
+  assert.strictEqual(item.isChecked, false);
+  assert.strictEqual(item.isRecurring, false);
+});
+
+test('list addItem reactivates single clear title match', () => {
+  const mem = { data: null };
+  const api = listStore.withStorage({
+    getItem: () => mem.data,
+    setItem: (_k, v) => { mem.data = v; }
+  });
+  api.save(api.defaults());
+  const a = api.addItem({ title: 'Eggs', isRecurring: true });
+  api.finishTrip(); // eggs → idle staple
+  const b = api.addItem({ title: 'eggs', quantity: '12' });
+  assert.strictEqual(b.id, a.id);
+  assert.strictEqual(b.isActive, true);
+  assert.strictEqual(b.isRecurring, true);
+  assert.strictEqual(b.quantity, '12');
+});
+
+test('list finishTrip deletes one-offs and idles staples', () => {
+  const mem = { data: null };
+  const api = listStore.withStorage({
+    getItem: () => mem.data,
+    setItem: (_k, v) => { mem.data = v; }
+  });
+  api.save(api.defaults());
+  const staple = api.addItem({ title: 'Rice', isRecurring: true });
+  const once = api.addItem({ title: 'Cake', isRecurring: false });
+  api.toggleChecked(staple.id, true);
+  api.toggleChecked(once.id, true);
+  api.finishTrip();
+  const list = api.activeList();
+  assert.ok(!list.items.find((i) => i.id === once.id));
+  const rice = list.items.find((i) => i.id === staple.id);
+  assert.ok(rice);
+  assert.strictEqual(rice.isActive, false);
+  assert.strictEqual(rice.isChecked, false);
+});
+
+test('list importMerge allows duplicate titles', () => {
+  const mem = { data: null };
+  const api = listStore.withStorage({
+    getItem: () => mem.data,
+    setItem: (_k, v) => { mem.data = v; }
+  });
+  api.save(api.defaults());
+  api.addItem({ title: 'Milk', isRecurring: false });
+  api.importMerge([{ t: 'Milk', q: '1', r: 0, c: 0 }]);
+  const milks = api.activeList().items.filter((i) => i.title.toLowerCase() === 'milk' && i.isActive);
+  assert.ok(milks.length >= 2);
+});
+
+test('list importReplace keeps idle staples', () => {
+  const mem = { data: null };
+  const api = listStore.withStorage({
+    getItem: () => mem.data,
+    setItem: (_k, v) => { mem.data = v; }
+  });
+  api.save(api.defaults());
+  const staple = api.addItem({ title: 'Butter', isRecurring: true });
+  api.finishTrip();
+  api.addItem({ title: 'Chips', isRecurring: false });
+  api.importReplace([{ t: 'Salsa', r: 0, c: 0 }]);
+  const list = api.activeList();
+  assert.ok(list.items.find((i) => i.id === staple.id && !i.isActive));
+  assert.ok(list.items.find((i) => i.title === 'Salsa' && i.isActive));
+  assert.ok(!list.items.find((i) => i.title === 'Chips' && i.isActive));
+});
+
+test('list codec round-trip', () => {
+  const b64 = listCodec.encodeShare({
+    v: 1,
+    n: 'Shopping',
+    i: [{ t: 'Milk', q: '2', r: 1, c: 0, o: 0 }]
+  });
+  assert.ok(b64.length > 8);
+  assert.ok(!/[+/=]/.test(b64)); // url-safe, no pad
+  const payload = listCodec.decodeShare(b64);
+  assert.strictEqual(payload.v, 1);
+  assert.strictEqual(payload.i[0].t, 'Milk');
+});
+
+test('list codec parseUrl reads #d=', () => {
+  const b64 = listCodec.encodeShare({ v: 1, i: [{ t: 'Tea', r: 0, c: 0 }] });
+  const url = 'https://example.com/tools/shopping-list/index.html#d=' + b64;
+  assert.strictEqual(listCodec.parseUrl(url), b64);
+});
+
 function clock() {
   return { now: 1000, id: (() => { let n = 0; return (p) => p + '-' + (++n); })() };
 }
