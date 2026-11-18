@@ -104,4 +104,17 @@
             <extra android:name="js.path" android:value="/tools/units/index.html" />
         </intent>
     </shortcut>
+    <shortcut
+        android:shortcutId="sizes"
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutShortLabel="@string/shortcut_sizes"
+        android:shortcutLongLabel="@string/shortcut_sizes">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.fishese.shophelper"
+            android:targetClass="com.fishese.shophelper.MainActivity">
+            <extra android:name="js.path" android:value="/tools/sizes/index.html" />
+        </intent>
+    </shortcut>
 </shortcuts>
