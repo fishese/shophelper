@@ -141,7 +141,7 @@ test('Traditional Chinese has every English string and fills backup counts', () 
   );
   assert.strictEqual(
     i18n.format('zh', 'backupPreview', { products: 2, notes: 3, refunds: 1, people: 4 }),
-    '備份有 2 項貨品、3 項價錢紀錄、1 項退稅紀錄，以及 4 位人物。匯入會取代 Shophelper 的備份資料。'
+    '備份有 2 項貨品、3 項價錢紀錄、1 項退稅紀錄，以及 4 個尺碼檔案。匯入會取代 Shophelper 的備份資料。'
   );
   assert.strictEqual(
     i18n.format('zh', 'taxWorth', { net: 'HK$80', checkout: 'HK$1,100' }),
