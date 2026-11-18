@@ -5,6 +5,7 @@
   else global.ShophelperStore = factory(global);
 })(typeof globalThis !== 'undefined' ? globalThis : this, function (global) {
   var KEY = 'shophelper_v1';
+  var storageOverride = null;
 
   function defaults() {
     return {
@@ -21,7 +22,8 @@
       products: [],
       observations: [],
       refunds: [],
-      shoppingList: null
+      shoppingList: null,
+      sizes: null
     };
   }
 
@@ -39,10 +41,12 @@
     base.observations = Array.isArray(raw.observations) ? raw.observations : [];
     base.refunds = Array.isArray(raw.refunds) ? raw.refunds : [];
     base.shoppingList = raw.shoppingList && typeof raw.shoppingList === 'object' ? raw.shoppingList : null;
+    base.sizes = raw.sizes && typeof raw.sizes === 'object' ? raw.sizes : null;
     return base;
   }
 
   function storage() {
+    if (storageOverride) return storageOverride;
     try { return global.localStorage; } catch (err) { return null; }
   }
 
@@ -78,5 +82,11 @@
     return merge(data);
   }
 
-  return { KEY: KEY, defaults: defaults, load: load, save: save, update: update, bundle: bundle, readBundle: readBundle };
+  function withStorage(ls) {
+    storageOverride = ls;
+    return api;
+  }
+
+  var api = { KEY: KEY, defaults: defaults, load: load, save: save, update: update, bundle: bundle, readBundle: readBundle, withStorage: withStorage };
+  return api;
 });

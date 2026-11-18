@@ -46,6 +46,9 @@ body.sh-framed {
   padding-top: calc(var(--sh-head) + env(safe-area-inset-top) + 32px);
   padding-bottom: calc(6.2rem + env(safe-area-inset-bottom));
 }
+body.sh-framed.sh-no-bar {
+  padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+}
 body.sh-framed:has(nav) { padding-bottom: calc(11rem + env(safe-area-inset-bottom)); }
 .sh-framed nav { bottom: calc(5.6rem + env(safe-area-inset-bottom)); }
 .sh-framed .fixed.bottom-0 {
@@ -321,6 +324,19 @@ body.sh-keyboard:not(.sh-bar-open) .sh-bar { padding: 4px; }
 .sh-list button { text-align: left; }
 .sh-diff { background: var(--sh-warn-bg); color: var(--sh-warn); border-radius: 12px; padding: 10px 12px; font-weight: 700; }
 .sh-home-settings { margin-top: 18px; }
+.sh-subhead { margin: 14px 0 4px; font-size: 0.95rem; }
+.sh-measure { margin-top: 8px; }
+.sh-quiet { color: var(--sh-muted); }
+.sh-link { color: var(--sh-accent); }
+#convertTabs {
+  display: flex;
+  flex-wrap: wrap;
+  width: 100%;
+  max-width: 100%;
+  overflow: visible;
+  border-radius: 16px;
+}
+#convertTabs button { white-space: nowrap; flex: 1 1 auto; }
 .sh-check { display: flex; align-items: center; gap: 8px; min-height: 44px; }
 .sh-check input { width: 20px; height: 20px; }
 .sh-embed-btn { margin-left: auto; }
