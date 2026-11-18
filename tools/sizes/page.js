@@ -379,18 +379,21 @@
     note.id = 'sizes-saved-' + kind + '-note';
     note.value = saved.note || '';
     note.placeholder = t('sizesNote');
-    function write(extra) {
+    var band = null;
+    var cup = null;
+    var width = null;
+    function write() {
       var payload = {
         system: system.value,
-        size: kind === 'bra' ? (saved.size || '') : size.value.trim(),
+        size: size.value.trim(),
         note: note.value
       };
-      if (kind === 'bra') {
-        payload.band = (extra && extra.band != null) ? extra.band : (saved.band || '');
-        payload.cup = (extra && extra.cup != null) ? extra.cup : (saved.cup || '');
+      if (band && cup) {
+        payload.band = band.value.trim();
+        payload.cup = cup.value.trim();
         payload.size = payload.band && payload.cup ? payload.band + payload.cup : (payload.band || payload.cup || '');
       }
-      if (kind === 'shoes') payload.width = (extra && extra.width != null) ? extra.width : (saved.width || '');
+      if (width) payload.width = width.value.trim();
       var blank = !payload.size && !payload.note && !(payload.band || payload.cup || payload.width);
       Store.setSaved(person.id, kind, blank ? null : payload);
     }
@@ -398,15 +401,15 @@
     note.addEventListener('change', function () { write(); });
     card.appendChild(fieldWrap(t('sizesSystem'), system));
     if (kind === 'bra') {
-      var band = document.createElement('input');
+      band = document.createElement('input');
       band.id = 'sizes-saved-bra-band';
       band.inputMode = 'numeric';
       band.value = saved.band || '';
-      var cup = document.createElement('input');
+      cup = document.createElement('input');
       cup.id = 'sizes-saved-bra-cup';
       cup.value = saved.cup || '';
-      band.addEventListener('change', function () { write({ band: band.value.trim(), cup: cup.value.trim() }); });
-      cup.addEventListener('change', function () { write({ band: band.value.trim(), cup: cup.value.trim() }); });
+      band.addEventListener('change', function () { write(); });
+      cup.addEventListener('change', function () { write(); });
       var pair = el('div', 'sh-row');
       pair.appendChild(fieldWrap(t('sizesBand'), band));
       pair.appendChild(fieldWrap(t('sizesCup'), cup));
@@ -416,11 +419,11 @@
       card.appendChild(fieldWrap(t('sizesSize'), size));
     }
     if (kind === 'shoes') {
-      var width = document.createElement('input');
+      width = document.createElement('input');
       width.id = 'sizes-saved-shoes-width';
       width.value = saved.width || '';
       width.placeholder = 'D, E, EE';
-      width.addEventListener('change', function () { write({ width: width.value.trim() }); });
+      width.addEventListener('change', function () { write(); });
       card.appendChild(fieldWrap(t('sizesWidth'), width));
     }
     card.appendChild(fieldWrap(t('sizesNote'), note));
