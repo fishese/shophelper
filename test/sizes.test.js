@@ -2,6 +2,17 @@
 
 const assert = require('assert');
 const sizes = require('../js/sizes');
+const sizesStore = require('../js/sizes-store');
+const shopStore = require('../js/store');
+
+function mem() {
+  const data = {};
+  return {
+    getItem: (k) => (k in data ? data[k] : null),
+    setItem: (k, v) => { data[k] = String(v); },
+    removeItem: (k) => { delete data[k]; }
+  };
+}
 
 let failed = 0;
 function test(name, fn) {
@@ -192,6 +203,96 @@ test('cm and inches round-trip a waist of 74 cm', () => {
   const inches = sizes.displayLength('74', 'in');
   const back = sizes.parseLength(inches, 'in');
   assert.ok(Math.abs(Number(back) - 74) < 0.1);
+});
+
+test('sizes store defaults to no people', () => {
+  const d = sizesStore.defaults();
+  assert.strictEqual(d.version, 1);
+  assert.strictEqual(d.selectedPersonId, null);
+  assert.deepStrictEqual(d.people, []);
+  assert.strictEqual(d.displayUnit, 'cm');
+});
+
+test('add, measure, and delete a person', () => {
+  const api = sizesStore.withStorage(mem());
+  const p = api.addPerson({ name: 'Alex' });
+  assert.strictEqual(api.load().selectedPersonId, p.id);
+  api.setMeasurement(p.id, 'waist', '74');
+  api.setSaved(p.id, 'shoes', { system: 'eu', size: '38', width: '', note: '' });
+  const custom = api.addCustom(p.id, { label: 'Thigh', valueCm: '56' });
+  const loaded = api.load().people[0];
+  assert.strictEqual(loaded.measurements.waist, '74');
+  assert.strictEqual(loaded.saved.shoes.size, '38');
+  assert.strictEqual(loaded.custom[0].label, 'Thigh');
+  assert.strictEqual(loaded.custom[0].valueCm, '56');
+  api.setMeasurement(p.id, 'waist', '');
+  assert.strictEqual(api.load().people[0].measurements.waist, undefined);
+  api.removeCustom(p.id, custom.id);
+  assert.strictEqual(api.load().people[0].custom.length, 0);
+  api.deletePerson(p.id);
+  assert.strictEqual(api.load().people.length, 0);
+  assert.strictEqual(api.load().selectedPersonId, null);
+});
+
+test('sizes load drops malformed people and keeps unknown person fields', () => {
+  const ls = mem();
+  ls.setItem('shophelper_sizes_v1', JSON.stringify({
+    version: 1,
+    selectedPersonId: 'gone',
+    displayUnit: 'in',
+    people: [
+      { id: 'p1', name: 'Alex', measurements: { waist: '74' }, custom: [], saved: {}, future: 'keep' },
+      { name: 'NoId' },
+      { id: 'x' }
+    ]
+  }));
+  const api = sizesStore.withStorage(ls);
+  const doc = api.load();
+  assert.strictEqual(doc.people.length, 1);
+  assert.strictEqual(doc.people[0].name, 'Alex');
+  assert.strictEqual(doc.people[0].future, 'keep');
+  assert.strictEqual(doc.selectedPersonId, null);
+  assert.strictEqual(doc.displayUnit, 'in');
+});
+
+test('sizes document mirrors into shophelper_v1.sizes', () => {
+  const ls = mem();
+  global.ShophelperStore = shopStore;
+  shopStore.withStorage(ls);
+  const api = sizesStore.withStorage(ls);
+  const p = api.addPerson({ name: 'Alex' });
+  const home = JSON.parse(ls.getItem('shophelper_v1'));
+  assert.strictEqual(home.sizes.people[0].id, p.id);
+  assert.strictEqual(home.sizes.people[0].name, 'Alex');
+});
+
+test('store merge keeps sizes on round-trip', () => {
+  const merged = shopStore.readBundle({
+    app: 'shophelper',
+    v: 1,
+    data: {
+      settings: {},
+      sizes: {
+        version: 1,
+        selectedPersonId: null,
+        displayUnit: 'cm',
+        people: [{ id: 'p1', name: 'Alex', measurements: { waist: '74' }, custom: [], saved: {} }]
+      }
+    }
+  });
+  assert.strictEqual(merged.sizes.people[0].name, 'Alex');
+  assert.strictEqual(merged.sizes.people[0].measurements.waist, '74');
+});
+
+test('store merge still accepts a backup with no sizes', () => {
+  const merged = shopStore.readBundle({
+    app: 'shophelper',
+    v: 1,
+    data: { settings: { homeCurrency: 'HKD' }, products: [] }
+  });
+  assert.ok(merged);
+  assert.strictEqual(merged.sizes, null);
+  assert.strictEqual(merged.settings.homeCurrency, 'HKD');
 });
 
 if (failed) {

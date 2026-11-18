@@ -30,6 +30,7 @@
   });
 
   var pending = null;
+  var importButton = null;
   document.getElementById('importFile').addEventListener('change', function (event) {
     var file = event.target.files && event.target.files[0];
     if (!file) return;
@@ -39,8 +40,10 @@
         var data = Store.readBundle(JSON.parse(String(reader.result)));
         if (!data) throw new Error('unreadable');
         pending = data;
+        var people = data.sizes && Array.isArray(data.sizes.people) ? data.sizes.people.length : 0;
         document.getElementById('importPreview').textContent =
-          'Backup has ' + data.products.length + ' products, ' + data.observations.length + ' price notes, and ' + data.refunds.length + ' refunds. Import replaces Shophelper backup data.';
+          'Backup has ' + data.products.length + ' products, ' + data.observations.length + ' price notes, ' + data.refunds.length + ' refunds, and ' + people + ' people. Import replaces Shophelper backup data.';
+        if (importButton) importButton.remove();
         var button = document.createElement('button');
         button.className = 'sh-btn warn';
         button.type = 'button';
@@ -51,14 +54,19 @@
             if (pending.shoppingList) {
               localStorage.setItem('shophelper_list_v1', JSON.stringify(pending.shoppingList));
             }
+            if (pending.sizes) {
+              localStorage.setItem('shophelper_sizes_v1', JSON.stringify(pending.sizes));
+            }
           } catch (e) {}
           SH.applyTheme();
           SH.toast('Backup restored.');
           location.reload();
         });
+        importButton = button;
         document.getElementById('importPreview').after(button);
       } catch (err) {
         document.getElementById('importPreview').textContent = 'That file is not a Shophelper backup.';
+        if (importButton) { importButton.remove(); importButton = null; }
       }
     };
     reader.readAsText(file);
