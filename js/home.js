@@ -30,7 +30,22 @@
   });
 
   var pending = null;
+  var pendingCounts = null;
+  var importError = false;
   var importButton = null;
+
+  function backupPreview(counts) {
+    return SH.format('backupPreview', counts);
+  }
+
+  function paintImport() {
+    var preview = document.getElementById('importPreview');
+    if (!preview) return;
+    if (importError) preview.textContent = SH.t('backupUnreadable');
+    else if (pendingCounts) preview.textContent = backupPreview(pendingCounts);
+    if (importButton) importButton.textContent = SH.t('backupReplace');
+  }
+  window.addEventListener('shophelper-lang', paintImport);
   document.getElementById('importFile').addEventListener('change', function (event) {
     var file = event.target.files && event.target.files[0];
     if (!file) return;
@@ -41,13 +56,14 @@
         if (!data) throw new Error('unreadable');
         pending = data;
         var people = data.sizes && Array.isArray(data.sizes.people) ? data.sizes.people.length : 0;
-        document.getElementById('importPreview').textContent =
-          'Backup has ' + data.products.length + ' products, ' + data.observations.length + ' price notes, ' + data.refunds.length + ' refunds, and ' + people + ' people. Import replaces Shophelper backup data.';
+        importError = false;
+        pendingCounts = { products: data.products.length, notes: data.observations.length, refunds: data.refunds.length, people: people };
+        document.getElementById('importPreview').textContent = backupPreview(pendingCounts);
         if (importButton) importButton.remove();
         var button = document.createElement('button');
         button.className = 'sh-btn warn';
         button.type = 'button';
-        button.textContent = 'Replace with this backup';
+        button.textContent = SH.t('backupReplace');
         button.addEventListener('click', function () {
           Store.save(pending);
           try {
@@ -59,13 +75,16 @@
             }
           } catch (e) {}
           SH.applyTheme();
-          SH.toast('Backup restored.');
+          SH.toast(SH.t('backupRestored'));
           location.reload();
         });
         importButton = button;
         document.getElementById('importPreview').after(button);
       } catch (err) {
-        document.getElementById('importPreview').textContent = 'That file is not a Shophelper backup.';
+        pending = null;
+        pendingCounts = null;
+        importError = true;
+        document.getElementById('importPreview').textContent = SH.t('backupUnreadable');
         if (importButton) { importButton.remove(); importButton = null; }
       }
     };

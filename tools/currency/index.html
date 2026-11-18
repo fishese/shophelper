@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-sh-auto="1" data-sh-title="Currency" data-sh-root="../..">
+<html lang="en" data-sh-auto="1" data-sh-title="Currency" data-sh-title-key="toolCurrency" data-sh-root="../..">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -11,44 +11,44 @@
 <body>
 <main class="sh-page">
   <section class="sh-card">
-    <label class="sh-label" for="amount">Amount</label>
+    <label class="sh-label" for="amount" data-i18n="amount">Amount</label>
     <input id="amount" class="sh-amount" inputmode="decimal" autocomplete="off" data-sh-kind="money" data-sh-currency-select="from">
     <div class="sh-row">
       <div>
-        <label class="sh-label" for="from">From</label>
+        <label class="sh-label" for="from" data-i18n="from">From</label>
         <select id="from"></select>
       </div>
-      <button class="sh-btn" id="swap" type="button" style="flex:0 0 44px; align-self:end" aria-label="Swap currencies">↔</button>
+      <button class="sh-btn" id="swap" type="button" style="flex:0 0 44px; align-self:end" data-i18n-aria="swapCurrencies" aria-label="Swap currencies">↔</button>
       <div>
-        <label class="sh-label" for="to">To</label>
+        <label class="sh-label" for="to" data-i18n="to">To</label>
         <select id="to"></select>
       </div>
     </div>
-    <p class="sh-k">Converted</p>
+    <p class="sh-k" data-i18n="converted">Converted</p>
     <p class="sh-result" id="result">—</p>
     <p class="sh-note" id="rateLine"></p>
     <p class="sh-estimate" id="mental"></p>
     <div class="sh-actions">
-      <button class="sh-btn" id="refresh" type="button">Refresh rate</button>
+      <button class="sh-btn" id="refresh" type="button" data-i18n="refreshRate">Refresh rate</button>
     </div>
-    <label class="sh-label" for="manual">Manual rate (1 from = this many to)</label>
+    <label class="sh-label" for="manual" data-i18n="manualRate">Manual rate (1 from = this many to)</label>
     <div class="sh-row">
-      <input id="manual" inputmode="decimal" placeholder="Optional, for a cash desk rate">
-      <button class="sh-btn" id="saveManual" type="button" style="flex:0 0 auto">Use manual</button>
-      <button class="sh-btn" id="clearManual" type="button" style="flex:0 0 auto">Use fetched</button>
+      <input id="manual" inputmode="decimal" data-i18n="manualRatePlaceholder" placeholder="Optional, for a cash desk rate">
+      <button class="sh-btn" id="saveManual" type="button" style="flex:0 0 auto" data-i18n="useManual">Use manual</button>
+      <button class="sh-btn" id="clearManual" type="button" style="flex:0 0 auto" data-i18n="useFetched">Use fetched</button>
     </div>
   </section>
   <section class="sh-card">
-    <h2>Scribble</h2>
-    <label class="sh-label" for="scratchCurrency">Scribble currency</label>
+    <h2 data-i18n="scribble">Scribble</h2>
+    <label class="sh-label" for="scratchCurrency" data-i18n="scribbleCurrency">Scribble currency</label>
     <select id="scratchCurrency"></select>
-    <label class="sh-label" for="scratch">Notes</label>
-    <textarea id="scratch" placeholder="sweater 32 x 5&#10;30 per bottle / 5&#10;# remember the blue one"></textarea>
-    <p class="sh-note">A line that is only a number is added. <span class="sh-v">32 x 5</span> and <span class="sh-v">30 per bottle / 5</span> are added. Words alone, and lines starting with #, stay notes.</p>
+    <label class="sh-label" for="scratch" data-i18n="notes">Notes</label>
+    <textarea id="scratch" data-i18n="scratchPlaceholder" placeholder="sweater 32 x 5&#10;30 per bottle / 5&#10;# remember the blue one"></textarea>
+    <p class="sh-note" data-i18n="scribbleHint">A line that is only a number is added. 32 x 5 and 30 per bottle / 5 are added. Words alone, and lines starting with #, stay notes.</p>
     <div class="sh-lines" id="lines"></div>
-    <p class="sh-k">Scribble total</p>
+    <p class="sh-k" data-i18n="scribbleTotal">Scribble total</p>
     <p class="sh-result" id="scratchTotal">—</p>
-    <button class="sh-btn warn" id="clearScratch" type="button">Clear scribble</button>
+    <button class="sh-btn warn" id="clearScratch" type="button" data-i18n="clearScribble">Clear scribble</button>
   </section>
 </main>
 <script src="../../js/decimal.js"></script>

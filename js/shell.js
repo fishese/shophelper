@@ -122,6 +122,10 @@
     return I18n ? I18n.t(currentLang(), key) : key;
   }
 
+  function format(key, map) {
+    return I18n ? I18n.format(currentLang(), key, map) : t(key);
+  }
+
   function applyTheme() {
     var theme = Store.load().settings.theme || 'dark';
     var dark = theme !== 'light';
@@ -278,7 +282,7 @@
     var plan = Results.insertionPlan(result, describeField(field), quoted || {});
     if (plan.action === 'insert') {
       writeField(field, plan.value);
-      setStatus('Inserted ' + (plan.currency ? money(plan.value, plan.currency) : (plan.value + (plan.unit ? ' ' + plan.unit : ''))));
+      setStatus(format('inserted', { value: plan.currency ? money(plan.value, plan.currency) : (plan.value + (plan.unit ? ' ' + plan.unit : '')) }));
       return;
     }
     if (plan.action === 'refuse') {
@@ -292,23 +296,29 @@
     openDialog({
       title: t('currencyMismatch'),
       render: function (panel, close) {
-        panel.appendChild(el('p', 'sh-note', result.currency + ' ' + result.value + ' is not ' + plan.to + '. It will not be pasted as ' + plan.to + ' ' + result.value + '.'));
+        panel.appendChild(el('p', 'sh-note', format('fxNotPasted', {
+          amount: result.currency + ' ' + result.value,
+          to: plan.to,
+          toAmount: plan.to + ' ' + result.value
+        })));
         var actions = el('div', 'sh-actions');
         if (plan.converted) {
-          var convert = el('button', 'sh-btn primary', 'Convert to ' + money(plan.converted.value, plan.converted.currency));
+          var convert = el('button', 'sh-btn primary', format('fxConvertTo', { amount: money(plan.converted.value, plan.converted.currency) }));
           convert.type = 'button';
-          var source = plan.converted.rateSource === 'manual' ? 'Manual rate' : 'Cached rate';
-          panel.appendChild(el('p', 'sh-note', source + ' · 1 ' + plan.from + ' = ' + plan.converted.rate + ' ' + plan.to + (plan.converted.rateAsOf ? ' · as of ' + plan.converted.rateAsOf : '')));
+          var source = plan.converted.rateSource === 'manual' ? t('rateManual') : t('rateCached');
+          var rateNote = format('fxRateLine', { source: source, from: plan.from, rate: plan.converted.rate, to: plan.to });
+          if (plan.converted.rateAsOf) rateNote += ' · ' + format('rateAsOf', { date: plan.converted.rateAsOf });
+          panel.appendChild(el('p', 'sh-note', rateNote));
           convert.addEventListener('click', function () {
             writeField(field, plan.converted.value);
             close();
-            setStatus('Converted and inserted.');
+            setStatus(t('fxConvertedInserted'));
           });
           actions.appendChild(convert);
         } else {
-          panel.appendChild(el('p', 'sh-note', 'No cached rate for this pair. Open Currency once while online, or type a manual rate there.'));
+          panel.appendChild(el('p', 'sh-note', t('fxNoRate')));
         }
-        var useCode = el('button', 'sh-btn', 'Use ' + result.currency + ' for this box');
+        var useCode = el('button', 'sh-btn', format('fxUseCode', { code: result.currency }));
         useCode.type = 'button';
         useCode.addEventListener('click', function () {
           var selectId = field.getAttribute('data-sh-currency-select');
@@ -321,9 +331,9 @@
             close();
             return;
           }
-          setStatus('This box cannot change currency. Convert it first.');
+          setStatus(t('fxBoxFixed'));
         });
-        var cancel = el('button', 'sh-btn', 'Cancel');
+        var cancel = el('button', 'sh-btn', t('cancel'));
         cancel.type = 'button';
         cancel.addEventListener('click', close);
         actions.appendChild(useCode);
@@ -463,7 +473,7 @@
     var select = document.createElement('select');
     var blank = document.createElement('option');
     blank.value = '';
-    blank.textContent = 'No pack size';
+    blank.textContent = t('priceNoPack');
     select.appendChild(blank);
     Units.categories().forEach(function (cat) {
       if (cat.id === 'temperature' || cat.id === 'area') return;
@@ -505,9 +515,9 @@
       data.products = outcome.state.products;
       data.observations = outcome.state.observations;
     });
-    if (outcome && outcome.duplicate) toast('Already saved for that shop and date.');
-    else if (outcome && outcome.wrote) toast('Price saved.');
-    else toast('Nothing saved.');
+    if (outcome && outcome.duplicate) toast(t('priceDuplicate'));
+    else if (outcome && outcome.wrote) toast(t('priceSaved'));
+    else toast(t('priceNothing'));
     return outcome;
   }
 
@@ -517,37 +527,37 @@
       shop: '', date: today(), source: 'manual', promo: false
     }, prefill || {});
     openDialog({
-      title: 'Save to Prices',
+      title: t('saveToPrices'),
       render: function (panel, close) {
         var form = document.createElement('form');
         function add(node) { form.appendChild(node.wrap); node.wrap.appendChild(node.input); return node.input; }
-        var name = add(fieldInput('Product', seed.name));
-        var brand = add(fieldInput('Brand or variant', seed.brand));
-        var price = add(fieldInput('Price', seed.price, { type: 'text' }));
+        var name = add(fieldInput(t('priceProduct'), seed.name));
+        var brand = add(fieldInput(t('priceBrand'), seed.brand));
+        var price = add(fieldInput(t('price'), seed.price, { type: 'text' }));
         price.setAttribute('inputmode', 'decimal');
         price.setAttribute('data-sh-kind', 'money');
         price.setAttribute('data-sh-currency-select', 'sh-save-currency');
         var currencyWrap = el('label', '');
-        currencyWrap.appendChild(el('span', 'sh-label', 'Currency'));
+        currencyWrap.appendChild(el('span', 'sh-label', t('currency')));
         var currency = currencySelect(seed.currency);
         currency.id = 'sh-save-currency';
         currencyWrap.appendChild(currency);
         form.appendChild(currencyWrap);
-        var packQty = add(fieldInput('Pack size', seed.packQty, { type: 'text' }));
+        var packQty = add(fieldInput(t('pricePack'), seed.packQty, { type: 'text' }));
         packQty.setAttribute('inputmode', 'decimal');
         var unitWrap = el('label', '');
-        unitWrap.appendChild(el('span', 'sh-label', 'Unit'));
+        unitWrap.appendChild(el('span', 'sh-label', t('priceUnit')));
         var packUnit = unitSelect(seed.packUnit);
         unitWrap.appendChild(packUnit);
         form.appendChild(unitWrap);
-        var shop = add(fieldInput('Shop', seed.shop));
-        var date = add(fieldInput('Date seen', seed.date, { type: 'date' }));
+        var shop = add(fieldInput(t('priceShop'), seed.shop));
+        var date = add(fieldInput(t('priceDate'), seed.date, { type: 'date' }));
         var promoWrap = el('label', 'sh-check');
         var promo = document.createElement('input');
         promo.type = 'checkbox';
         promo.checked = !!seed.promo;
         promoWrap.appendChild(promo);
-        promoWrap.appendChild(document.createTextNode('Promotional or clearance price'));
+        promoWrap.appendChild(document.createTextNode(t('pricePromoCheck')));
         form.appendChild(promoWrap);
         var source = document.createElement('input');
         source.type = 'hidden';
@@ -559,13 +569,13 @@
         };
 
         var picker = el('div', 'sh-list');
-        form.appendChild(el('span', 'sh-label', 'Save onto'));
-        var createBtn = el('button', 'sh-btn primary', 'New product');
+        form.appendChild(el('span', 'sh-label', t('priceSaveOnto')));
+        var createBtn = el('button', 'sh-btn primary', t('priceNew'));
         createBtn.type = 'button';
         picker.appendChild(createBtn);
         var search = document.createElement('input');
         search.type = 'search';
-        search.placeholder = 'Find a saved product';
+        search.placeholder = t('priceFind');
         search.className = 'sh-input';
         form.appendChild(search);
         form.appendChild(picker);
@@ -581,7 +591,7 @@
           picker.appendChild(createBtn);
           products().forEach(function (product) {
             var card = Prices.card({ products: Store.load().products, observations: Store.load().observations }, product.id);
-            var button = el('button', 'sh-btn', product.name + (card && card.usual ? ' · usual ' + money(card.usual.price, card.usual.currency) : ''));
+            var button = el('button', 'sh-btn', product.name + (card && card.usual ? ' · ' + t('priceUsualInline') + ' ' + money(card.usual.price, card.usual.currency) : ''));
             button.type = 'button';
             button.addEventListener('click', function () { choose(product.id); });
             picker.appendChild(button);
@@ -589,8 +599,8 @@
         }
         function incoming() {
           var value = readPriceForm(fields);
-          if (!value.name.trim()) { name.focus(); toast('Add a product name.'); return null; }
-          if (Decimal.parse(value.price) == null) { price.focus(); toast('Enter a price.'); return null; }
+          if (!value.name.trim()) { name.focus(); toast(t('priceNeedName')); return null; }
+          if (Decimal.parse(value.price) == null) { price.focus(); toast(t('priceNeedPrice')); return null; }
           return value;
         }
         function choose(productId) {
@@ -613,18 +623,19 @@
         function showChoice(decision, value) {
           picker.innerHTML = '';
           if (decision.kind === 'price-diff') {
-            picker.appendChild(el('div', 'sh-diff', money(value.price, value.currency) + ' is ' + decision.direction + ' than usual by ' + money(decision.delta, decision.currency) + '.'));
-            addChoice('Update last seen only', 'last-seen');
-            addChoice('Update usual too', 'usual');
+            picker.appendChild(el('div', 'sh-diff', format(decision.direction === 'lower' ? 'priceLower' : 'priceHigher', {
+              price: money(value.price, value.currency),
+              delta: money(decision.delta, decision.currency)
+            })));
+            addChoice(t('priceLastOnly'), 'last-seen');
+            addChoice(t('priceUsualToo'), 'usual');
           } else {
-            var why = decision.reason === 'currency'
-              ? 'This price is in a different currency. Usual and best stay in their original currency.'
-              : 'This pack size is different, so it is not compared with the package price.';
+            var why = decision.reason === 'currency' ? t('priceOtherCurrency') : t('priceOtherPack');
             picker.appendChild(el('div', 'sh-diff', why));
-            addChoice('Update last seen only', 'last-seen');
-            addChoice('Save as a separate variant', 'variant');
+            addChoice(t('priceLastOnly'), 'last-seen');
+            addChoice(t('priceVariant'), 'variant');
           }
-          var cancel = el('button', 'sh-btn', 'Cancel');
+          var cancel = el('button', 'sh-btn', t('cancel'));
           cancel.type = 'button';
           cancel.addEventListener('click', close);
           picker.appendChild(cancel);
@@ -754,6 +765,16 @@
       }
     });
     paintLangSeg();
+    var titleKey = document.documentElement.getAttribute('data-sh-title-key');
+    var heading = document.querySelector('.sh-title');
+    if (titleKey && heading) {
+      heading.textContent = t(titleKey);
+      document.title = t(titleKey) + ' · Shophelper';
+    }
+    document.querySelectorAll('[data-i18n-aria]').forEach(function (node) {
+      var key = node.getAttribute('data-i18n-aria');
+      if (key) node.setAttribute('aria-label', t(key));
+    });
   }
   window.addEventListener('shophelper-lang', applyPageI18n);
 
@@ -801,6 +822,7 @@
     setLang: setLang,
     lang: currentLang,
     t: t,
+    format: format,
     applyPageI18n: applyPageI18n,
     today: today,
     currencySelect: currencySelect,
