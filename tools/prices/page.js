@@ -9,6 +9,13 @@
 
   function state() { return Store.load(); }
 
+  function sourceLabel(source) {
+    if (source === 'manual') return SH.t('priceSourceManual');
+    if (source === 'Cartulator') return SH.t('priceSourceCart');
+    if (source === 'Deal Checker') return SH.t('priceSourceDeals');
+    return source || '';
+  }
+
   function packText(obs) {
     if (!obs || !obs.packQty) return '';
     return obs.packQty + ' ' + (obs.packUnit || '');
@@ -90,7 +97,7 @@
       var row = document.createElement('div');
       row.className = 'sh-line';
       var text = document.createElement('em');
-      text.textContent = obs.date + ' · ' + (obs.shop || 'No shop') + ' · ' + obs.source + (obs.promo ? ' · promo' : '');
+      text.textContent = obs.date + ' · ' + (obs.shop || SH.t('priceNoShop')) + ' · ' + sourceLabel(obs.source) + (obs.promo ? ' · ' + SH.t('pricePromo') : '');
       var value = document.createElement('span');
       value.textContent = SH.money(obs.price, obs.currency);
       row.appendChild(text);
@@ -98,7 +105,7 @@
       var mark = document.createElement('button');
       mark.className = 'sh-btn';
       mark.type = 'button';
-      mark.textContent = card.usual && card.usual.id === obs.id ? 'Usual' : 'Mark usual';
+      mark.textContent = card.usual && card.usual.id === obs.id ? SH.t('pricesUsual') : SH.t('priceMarkUsual');
       mark.disabled = card.usual && card.usual.id === obs.id;
       mark.addEventListener('click', function () {
         Store.update(function (current) {

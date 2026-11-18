@@ -55,8 +55,8 @@
     document.getElementById('netOut').textContent = SH.money(back.net, calc.currency);
     var cmp = Decimal.cmp(back.net, '0');
     document.getElementById('worth').textContent = cmp > 0
-      ? 'About ' + SH.money(back.net, calc.currency) + ' back after their cut, on a ' + SH.money(calc.checkout, calc.currency) + ' checkout. This is an estimate, not a promised refund.'
-      : 'The fee uses up the tax. On these numbers the counter is unlikely to be worth the wait. This is an estimate.';
+      ? SH.format('taxWorth', { net: SH.money(back.net, calc.currency), checkout: SH.money(calc.checkout, calc.currency) })
+      : SH.t('taxNotWorth');
     SH.publish({ slot: 'tax-refund', sourceTool: 'tax', kind: 'money', value: back.net, currency: calc.currency, label: SH.t('netRefundLabel'), calculatedAt: Date.now() });
   }
 
@@ -130,17 +130,18 @@
       var card = document.createElement('article');
       card.className = 'sh-card';
       var title = document.createElement('strong');
-      title.textContent = row.retailer || 'Refund';
+      title.textContent = row.retailer || SH.t('refundFallback');
       card.appendChild(title);
       var meta = document.createElement('p');
       meta.className = 'sh-note';
-      meta.textContent = row.purchaseDate + ' · expected ' + SH.money(row.estimatedNet, row.currency) + (row.actualAmount ? ' · received ' + SH.money(row.actualAmount, row.currency) : '');
+      meta.textContent = row.purchaseDate + ' · ' + SH.t('refundExpectedWord') + ' ' + SH.money(row.estimatedNet, row.currency) + (row.actualAmount ? ' · ' + SH.t('refundReceivedWord') + ' ' + SH.money(row.actualAmount, row.currency) : '');
       card.appendChild(meta);
       var status = document.createElement('select');
+      var statusKey = { expected: 'statusExpected', submitted: 'statusSubmitted', received: 'statusReceived', cancelled: 'statusCancelled' };
       ['expected', 'submitted', 'received', 'cancelled'].forEach(function (name) {
         var option = document.createElement('option');
         option.value = name;
-        option.textContent = name.charAt(0).toUpperCase() + name.slice(1);
+        option.textContent = SH.t(statusKey[name]);
         status.appendChild(option);
       });
       status.value = row.status;

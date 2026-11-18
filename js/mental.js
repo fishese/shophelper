@@ -67,13 +67,55 @@
     return { text: 'Divide by ' + divisor + divQ, err: divErr };
   }
 
-  function describe(rate) {
+  function toZh(text) {
+    var rules = [
+      [/1:1 — no math needed/gi, '1:1，不用計算'],
+      [/add two zeros/gi, '加兩個 0'],
+      [/drop two zeros/gi, '去掉兩個 0'],
+      [/drop a zero, divide by (\d+)/gi, '去掉一個 0，再除以 $1'],
+      [/multiply by (\d+), add a zero/gi, '乘以 $1，再加一個 0'],
+      [/and subtract a bit/gi, '，再減一點'],
+      [/and add a bit/gi, '，再加一點'],
+      [/plus a tiny bit/gi, '，再加少許'],
+      [/minus a tiny bit/gi, '，再減少許'],
+      [/add a zero/gi, '加一個 0'],
+      [/drop a zero/gi, '去掉一個 0'],
+      [/multiply by (\d+)/gi, '乘以 $1'],
+      [/divide by (\d+)/gi, '除以 $1'],
+      [/roughly equal/gi, '大致相同'],
+      [/add (\d+)% \(a quarter\)/gi, '加 $1%（四分之一）'],
+      [/add (\d+)% \(half\)/gi, '加 $1%（一半）'],
+      [/add (\d+)% \(a third\)/gi, '加 $1%（三分之一）'],
+      [/add (\d+)% \(two-thirds\)/gi, '加 $1%（三分之二）'],
+      [/add (\d+)% \(three-quarters\)/gi, '加 $1%（四分之三）'],
+      [/subtract (\d+)% \(a quarter\)/gi, '減 $1%（四分之一）'],
+      [/subtract (\d+)% \(half\)/gi, '減 $1%（一半）'],
+      [/subtract (\d+)% \(a third\)/gi, '減 $1%（三分之一）'],
+      [/subtract (\d+)% \(two-thirds\)/gi, '減 $1%（三分之二）'],
+      [/subtract (\d+)% \(three-quarters\)/gi, '減 $1%（四分之三）'],
+      [/add (\d+)%/gi, '加 $1%'],
+      [/subtract (\d+)%/gi, '減 $1%'],
+      [/drop (\d+) zeros?/gi, '去掉 $1 個 0'],
+      [/add (\d+) zeros?/gi, '加 $1 個 0'],
+      [/, then it's roughly equal/gi, '，之後大致相同'],
+      [/, then /gi, '，然後']
+    ];
+    var out = text;
+    rules.forEach(function (rule) { out = out.replace(rule[0], rule[1]); });
+    return out;
+  }
+
+  function describe(rate, lang) {
+    function finish(out) {
+      if (lang === 'zh' && out.text) return { text: toZh(out.text), errorPercent: out.errorPercent };
+      return out;
+    }
     var n = typeof rate === 'number' ? rate : Number(rate);
     if (!isFinite(n) || n <= 0) return { text: '', errorPercent: 0 };
-    if (Math.abs(n - 1) < 0.005) return { text: '1:1 — no math needed', errorPercent: 0 };
+    if (Math.abs(n - 1) < 0.005) return finish({ text: '1:1 — no math needed', errorPercent: 0 });
     if (n >= 0.01 && n <= 100) {
       var mid = describeMantissa(n);
-      return { text: mid.text.charAt(0).toUpperCase() + mid.text.slice(1), errorPercent: Math.round(mid.err * 100) };
+      return finish({ text: mid.text.charAt(0).toUpperCase() + mid.text.slice(1), errorPercent: Math.round(mid.err * 100) });
     }
     var dropping = n < 0.01;
     var zBase = Math.floor(Math.abs(Math.log10(n)));
@@ -88,7 +130,7 @@
     var text = best.desc.text === 'roughly equal'
       ? zeroPhrase + ", then it's roughly equal"
       : zeroPhrase + ', then ' + best.desc.text.charAt(0).toLowerCase() + best.desc.text.slice(1);
-    return { text: text, errorPercent: Math.round(best.desc.err * 100) };
+    return finish({ text: text, errorPercent: Math.round(best.desc.err * 100) });
   }
 
   return { describe: describe };

@@ -9,6 +9,7 @@ const tax = require('../js/tax');
 const prices = require('../js/prices');
 const results = require('../js/results');
 const rates = require('../js/rates');
+const i18n = require('../js/i18n');
 
 let failed = 0;
 function test(name, fn) {
@@ -119,6 +120,36 @@ test('mental math labels a few rates as approximate shortcuts', () => {
   assert.strictEqual(mental.describe('0.25').text, 'Divide by 4');
   assert.strictEqual(mental.describe('0').text, '');
   assert.strictEqual(mental.describe('-2').text, '');
+});
+
+test('mental math keeps the same shortcut in Traditional Chinese', () => {
+  assert.strictEqual(mental.describe('1', 'zh').text, '1:1，不用計算');
+  assert.strictEqual(mental.describe('4', 'zh').text, '乘以 4');
+  assert.strictEqual(mental.describe('0.25', 'zh').text, '除以 4');
+  assert.strictEqual(mental.describe('200', 'zh').text, '加 2 個 0，然後乘以 2');
+});
+
+test('Traditional Chinese has every English string and fills backup counts', () => {
+  const en = i18n.dict('en');
+  const zh = i18n.dict('zh');
+  Object.keys(en).forEach((key) => {
+    assert.ok(zh[key], 'missing zh key ' + key);
+  });
+  assert.strictEqual(
+    i18n.format('en', 'backupPreview', { products: 2, notes: 3, refunds: 1, people: 4 }),
+    'Backup has 2 products, 3 price notes, 1 refunds, and 4 people. Import replaces Shophelper backup data.'
+  );
+  assert.strictEqual(
+    i18n.format('zh', 'backupPreview', { products: 2, notes: 3, refunds: 1, people: 4 }),
+    '備份有 2 項貨品、3 項價錢紀錄、1 項退稅紀錄，以及 4 位人物。匯入會取代 Shophelper 的備份資料。'
+  );
+  assert.strictEqual(
+    i18n.format('zh', 'taxWorth', { net: 'HK$80', checkout: 'HK$1,100' }),
+    '扣除手續費後大約可退 HK$80，結帳金額為 HK$1,100。這只是估算，並非保證可退的金額。'
+  );
+  ['backupRestored', 'noRateYet', 'rateMissing', 'taxNotWorth', 'priceMarkUsual', 'priceNoShop', 'fxNoRate', 'priceSaved'].forEach((key) => {
+    assert.notStrictEqual(zh[key], en[key], key);
+  });
 });
 
 test('inclusive tax 1100 at 10% extracts 100', () => {

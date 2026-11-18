@@ -48,13 +48,13 @@
       mental.textContent = '';
       SH.clearResult('fx-amount');
     } else if (!converted) {
-      result.textContent = 'No rate yet';
+      result.textContent = SH.t('noRateYet');
       mental.textContent = '';
       SH.clearResult('fx-amount');
     } else {
       result.textContent = SH.money(converted.value, to.value);
-      var hint = Mental.describe(converted.rate);
-      mental.textContent = hint.text ? ('In your head: ' + hint.text + (hint.errorPercent > 1 ? ' (about ' + hint.errorPercent + '% off)' : '') + '.') : '';
+      var hint = Mental.describe(converted.rate, SH.lang());
+      mental.textContent = hint.text ? (SH.t('inYourHead') + hint.text + (hint.errorPercent > 1 ? SH.format('aboutOff', { n: hint.errorPercent }) : '') + SH.t('sentenceStop')) : '';
       SH.publish({
         slot: 'fx-amount', sourceTool: 'currency', kind: 'money', value: converted.value,
         currency: to.value, label: SH.t('convertedLabel'), calculatedAt: Date.now(),
@@ -63,13 +63,15 @@
     }
     if (quote) {
       var info = Rates.describeCache({ date: quote.asOf || (data.rates.cache && data.rates.cache.date) }, Date.now(), quote.manual);
-      var provenance = quote.source === 'identity' ? 'Same currency'
-        : (quote.manual ? 'Manual rate'
-        : (quote.source === 'bundled' ? 'Starting rate'
-        : (info.stale ? 'Last updated rate, older than a day' : 'Last updated rate')));
-      rateLine.textContent = provenance + ' · 1 ' + from.value + ' = ' + quote.rate + ' ' + to.value + (quote.asOf ? ' · as of ' + quote.asOf : '');
+      var provenance = quote.source === 'identity' ? SH.t('rateSame')
+        : (quote.manual ? SH.t('rateManual')
+        : (quote.source === 'bundled' ? SH.t('rateStarting')
+        : (info.stale ? SH.t('rateStale') : SH.t('rateCached'))));
+      var line = SH.format('rateLine', { provenance: provenance, from: from.value, rate: quote.rate, to: to.value });
+      if (quote.asOf) line += ' · ' + SH.format('rateAsOf', { date: quote.asOf });
+      rateLine.textContent = line;
     } else {
-      rateLine.textContent = 'Refresh while online, or enter a manual rate. A cached rate stays available after that.';
+      rateLine.textContent = SH.t('rateMissing');
     }
     renderScratch();
   }
@@ -86,7 +88,7 @@
       var name = document.createElement('em');
       name.textContent = line.text;
       var value = document.createElement('span');
-      if (line.result.kind === 'note') value.textContent = 'note';
+      if (line.result.kind === 'note') value.textContent = SH.t('scribbleNote');
       else value.textContent = SH.money(line.result.value, currency);
       row.appendChild(name);
       row.appendChild(value);
@@ -114,7 +116,7 @@
       return response.json();
     }, Date.now());
     if (out.ok) Store.update(function (data) { data.rates.cache = memory.cache; });
-    if (!silent) SH.toast(out.ok ? 'Rate updated.' : 'Could not refresh. Cached rate kept.');
+    if (!silent) SH.toast(out.ok ? SH.t('rateUpdated') : SH.t('rateRefreshFailed'));
     render();
   }
 
@@ -132,7 +134,7 @@
   });
   document.getElementById('saveManual').addEventListener('click', function () {
     var rate = document.getElementById('manual').value.trim();
-    if (Decimal.parse(rate) == null || Decimal.cmp(rate, '0') <= 0) { SH.toast('Enter a rate above zero.'); return; }
+    if (Decimal.parse(rate) == null || Decimal.cmp(rate, '0') <= 0) { SH.toast(SH.t('rateAboveZero')); return; }
     Store.update(function (data) {
       data.rates.manual[Rates.manualKey(from.value, to.value)] = { rate: rate, asOf: SH.today() };
     });
@@ -145,11 +147,12 @@
   });
   document.getElementById('clearScratch').addEventListener('click', function () {
     if (!document.getElementById('scratch').value) return;
-    if (!window.confirm('Clear the scribble?')) return;
+    if (!window.confirm(SH.t('clearScribbleConfirm'))) return;
     document.getElementById('scratch').value = '';
     render();
   });
   syncManual();
   render();
   refresh(true);
+  window.addEventListener('shophelper-lang', render);
 })();
