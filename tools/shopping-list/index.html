@@ -35,7 +35,8 @@
   .list-icon-btn[aria-pressed="true"] { color: var(--sh-accent); font-weight: 800; }
   .list-icon-btn:disabled { opacity: .3; }
   .list-checked { margin-top: 12px; border-top: 1px solid var(--sh-line); padding-top: 8px; }
-  .list-checked > summary { cursor: pointer; font-weight: 700; min-height: 40px; display: flex; align-items: center; }
+  .list-checked > summary { cursor: pointer; font-weight: 700; min-height: 40px; display: flex; align-items: center; gap: 0.4em; }
+  .list-head h2 { display: inline-flex; align-items: baseline; gap: 0.4em; }
   #finishTrip { margin-top: 8px; }
   .add-row { display: grid; grid-template-columns: 1fr 4.5rem; gap: 8px; align-items: end; }
   .add-row .span-2 { grid-column: 1 / -1; }
@@ -109,9 +110,6 @@
   <dialog id="importDialog"></dialog>
 </main>
 <script src="../../js/vendor/pako.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@2.0.4/dist/qrcode.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script src="../../js/decimal.js"></script>
 <script src="../../js/units.js"></script>
 <script src="../../js/napkin.js"></script>

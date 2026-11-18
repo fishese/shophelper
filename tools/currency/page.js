@@ -63,7 +63,10 @@
     }
     if (quote) {
       var info = Rates.describeCache({ date: quote.asOf || (data.rates.cache && data.rates.cache.date) }, Date.now(), quote.manual);
-      var provenance = quote.source === 'identity' ? 'Same currency' : (quote.manual ? 'Manual rate' : (info.stale ? 'Cached rate, older than a day' : 'Cached rate'));
+      var provenance = quote.source === 'identity' ? 'Same currency'
+        : (quote.manual ? 'Manual rate'
+        : (quote.source === 'bundled' ? 'Starting rate'
+        : (info.stale ? 'Last updated rate, older than a day' : 'Last updated rate')));
       rateLine.textContent = provenance + ' · 1 ' + from.value + ' = ' + quote.rate + ' ' + to.value + (quote.asOf ? ' · as of ' + quote.asOf : '');
     } else {
       rateLine.textContent = 'Refresh while online, or enter a manual rate. A cached rate stays available after that.';
@@ -102,19 +105,20 @@
     document.getElementById('manual').value = manualRate ? manualRate.rate : '';
   }
 
-  async function refresh() {
+  async function refresh(silent) {
     var memory = Store.load().rates;
     var out = await Rates.refresh(memory, async function () {
-      var response = await fetch('https://api.frankfurter.app/latest?from=' + encodeURIComponent(from.value));
+      var code = String(from.value || 'EUR').toLowerCase();
+      var response = await fetch('https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/' + encodeURIComponent(code) + '.min.json');
       if (!response.ok) throw new Error('Rate service unavailable');
       return response.json();
     }, Date.now());
     if (out.ok) Store.update(function (data) { data.rates.cache = memory.cache; });
-    SH.toast(out.ok ? 'Rate updated.' : 'Could not refresh. Cached rate kept.');
+    if (!silent) SH.toast(out.ok ? 'Rate updated.' : 'Could not refresh. Cached rate kept.');
     render();
   }
 
-  document.getElementById('refresh').addEventListener('click', refresh);
+  document.getElementById('refresh').addEventListener('click', function () { refresh(false); });
   amount.addEventListener('input', render);
   from.addEventListener('change', function () { syncManual(); render(); });
   to.addEventListener('change', function () { syncManual(); render(); });
@@ -147,5 +151,5 @@
   });
   syncManual();
   render();
-  refresh();
+  refresh(true);
 })();

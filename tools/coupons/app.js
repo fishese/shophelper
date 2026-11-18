@@ -518,12 +518,18 @@ function ocrLooksWeak(text){return ocrScore(text)<20;}
 function ocrLogger(m){
   if(m.status==='recognizing text'){$('#progbar').style.width=Math.round(m.progress*100)+'%';
     $('#ocrStatus').textContent='Reading text… '+Math.round(m.progress*100)+'%';}
-  else if(m.status&&m.status.indexOf('language')>=0){$('#ocrStatus').textContent='Downloading language data (one time)…';}
+  else if(m.status&&m.status.indexOf('language')>=0){$('#ocrStatus').textContent='Loading language data…';}
   else if(m.status)$('#ocrStatus').textContent=m.status.charAt(0).toUpperCase()+m.status.slice(1)+'…';
 }
 async function ocrBest(file, langs){
   if(typeof Tesseract.createWorker==='function'){
-    const worker=await Tesseract.createWorker(langs,1,{logger:ocrLogger});
+    const worker=await Tesseract.createWorker(langs,1,{
+      logger:ocrLogger,
+      workerPath:new URL('../../js/vendor/tesseract.worker.min.js',location.href).href,
+      corePath:new URL('../../js/vendor/',location.href).href,
+      langPath:new URL('../../js/vendor/tessdata/',location.href).href,
+      gzip:true
+    });
     try{
       await worker.setParameters({tessedit_pageseg_mode:'6'});
       const mild=await scaleImageForOcr(file);
@@ -542,7 +548,13 @@ async function ocrBest(file, langs){
     }
   }
   const mild=await scaleImageForOcr(file);
-  const r1=await Tesseract.recognize(mild,langs,{logger:ocrLogger});
+  const r1=await Tesseract.recognize(mild,langs,{
+    logger:ocrLogger,
+    workerPath:new URL('../../js/vendor/tesseract.worker.min.js',location.href).href,
+    corePath:new URL('../../js/vendor/',location.href).href,
+    langPath:new URL('../../js/vendor/tessdata/',location.href).href,
+    gzip:true
+  });
   return (r1.data&&r1.data.text)||'';
 }
 $('#file').addEventListener('change',async e=>{

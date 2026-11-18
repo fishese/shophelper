@@ -322,6 +322,49 @@ test('rate parser keeps the date and does not call a cached rate live', () => {
   assert.strictEqual(label.stale, true);
 });
 
+test('missing rate cache uses the bundled 2026-11-17 snapshot', () => {
+  const q = rates.quote({ cache: null, manual: {} }, 'HKD', 'JPY');
+  assert.ok(q);
+  assert.strictEqual(q.source, 'bundled');
+  assert.strictEqual(q.asOf, '2026-11-17');
+  assert.ok(Number(q.rate) > 0);
+});
+
+test('bundled rates include TWD, Vietnam, and Egypt', () => {
+  const twd = rates.quote({ cache: null, manual: {} }, 'EUR', 'TWD');
+  const vnd = rates.quote({ cache: null, manual: {} }, 'EUR', 'VND');
+  const egp = rates.quote({ cache: null, manual: {} }, 'GBP', 'EGP');
+  assert.strictEqual(twd.rate, '36.27408767');
+  assert.ok(Number(vnd.rate) > 1000);
+  assert.ok(egp);
+  assert.strictEqual(egp.asOf, '2026-11-17');
+});
+
+test('currency-api refresh stores the feed date and Asian rates', async () => {
+  const memory = { cache: null, manual: {} };
+  const out = await rates.refresh(memory, async () => ({ date: '2026-11-17', hkd: { usd: 0.128, twd: 4.2, egp: 6.1, vnd: 3300 } }), 5);
+  assert.strictEqual(out.ok, true);
+  assert.strictEqual(memory.cache.base, 'HKD');
+  assert.strictEqual(memory.cache.source, 'currency-api');
+  assert.strictEqual(memory.cache.rates.VND, '3300');
+  assert.strictEqual(memory.cache.rates.EGP, '6.1');
+});
+
+test('an older cache without TWD can still price NTD', () => {
+  const q = rates.quote({ cache: { base: 'HKD', date: '2026-11-01', source: 'currency-api', rates: { EUR: '0.116', USD: '0.128' } }, manual: {} }, 'HKD', 'TWD');
+  assert.ok(q);
+  assert.ok(Number(q.rate) > 0);
+});
+
+test('a saved cache replaces the bundled snapshot', () => {
+  const q = rates.quote({
+    cache: { base: 'EUR', date: '2026-01-01', source: 'frankfurter', rates: { HKD: '8', JPY: '160' } },
+    manual: {}
+  }, 'HKD', 'JPY');
+  assert.strictEqual(q.asOf, '2026-01-01');
+  assert.notStrictEqual(q.source, 'bundled');
+});
+
 const listStore = require('../js/list-store');
 const listCodec = require('../js/list-codec');
 const store = require('../js/store');

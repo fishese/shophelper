@@ -285,6 +285,29 @@
 
   var Codec = window.ShophelperListCodec;
   var SCAN_HOST_ID = 'importScanHost';
+  var QR_SRCS = [
+    '../../js/vendor/jsQR.js',
+    '../../js/vendor/qrcode.js',
+    '../../js/vendor/html5-qrcode.min.js'
+  ];
+  var qrLibs = null;
+
+  function loadScript(src) {
+    return new Promise(function (resolve, reject) {
+      var existing = document.querySelector('script[src="' + src + '"]');
+      if (existing) { resolve(); return; }
+      var script = document.createElement('script');
+      script.src = src;
+      script.onload = function () { resolve(); };
+      script.onerror = function () { reject(new Error(src)); };
+      document.head.appendChild(script);
+    });
+  }
+
+  function ensureQrLibs() {
+    if (!qrLibs) qrLibs = Promise.all(QR_SRCS.map(loadScript)).catch(function () {});
+    return qrLibs;
+  }
 
   function mk(tag, cls, text) {
     var n = document.createElement(tag);
@@ -345,6 +368,7 @@
   }
 
   function openShare() {
+    ensureQrLibs();
     var dlg = els.shareDialog;
     dlg.innerHTML = '';
     dlg.appendChild(mk('h3', null, t('listShareTitle')));
@@ -372,15 +396,20 @@
     }
 
     dlg.appendChild(mk('p', 'sh-note', t('listShareHint')));
-    var qr = qrDataUrl(link);
-    if (qr.url) {
-      var img = mk('img', 'share-qr');
-      img.alt = 'QR';
-      img.src = qr.url;
-      dlg.appendChild(img);
-    } else {
-      dlg.appendChild(mk('p', 'sh-note', t(qr.err)));
-    }
+    var qrSlot = mk('p', 'sh-note', '');
+    dlg.appendChild(qrSlot);
+    ensureQrLibs().then(function () {
+      var qr = qrDataUrl(link);
+      qrSlot.textContent = '';
+      if (qr.url) {
+        var img = mk('img', 'share-qr');
+        img.alt = 'QR';
+        img.src = qr.url;
+        qrSlot.replaceWith(img);
+      } else {
+        qrSlot.textContent = t(qr.err);
+      }
+    });
 
     var field = mk('textarea', 'share-link');
     field.readOnly = true;
@@ -410,7 +439,7 @@
   }
 
   function decodeImageFile(file) {
-    return new Promise(function (resolve) {
+    return ensureQrLibs().then(function () { return new Promise(function (resolve) {
       var url = URL.createObjectURL(file);
       var done = function (text) { URL.revokeObjectURL(url); resolve(text || null); };
       var viaHtml5 = function () {
@@ -440,10 +469,11 @@
       };
       img.onerror = function () { done(null); };
       img.src = url;
-    });
+    }); });
   }
 
   function openImport(prefill) {
+    ensureQrLibs();
     var dlg = els.importDialog;
     dlg.innerHTML = '';
     dlg.appendChild(mk('h3', null, t('listImportTitle')));
@@ -533,6 +563,7 @@
 
     var scanBtn = mkBtn(t('listImportScan'), function () {
       if (scanner) { stopScan(); return; }
+      ensureQrLibs().then(function () {
       if (typeof window.Html5Qrcode !== 'function') { msg.textContent = t('listImportNoLib'); return; }
       try {
         var s = new window.Html5Qrcode(SCAN_HOST_ID, { verbose: false });
@@ -563,6 +594,7 @@
         scanBtn.textContent = t('listImportScan');
         msg.textContent = t('listImportCamFail');
       }
+      });
     });
 
     var fileLabel = mk('label', 'sh-label', t('listImportFile'));

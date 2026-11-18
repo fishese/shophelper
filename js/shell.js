@@ -10,7 +10,7 @@
   var Tax = window.ShophelperTax;
   var I18n = window.ShophelperI18n;
 
-  var SYMBOLS = { HKD: 'HK$', USD: 'US$', EUR: '€', GBP: '£', JPY: '¥', CNY: 'CN¥', TWD: 'NT$', KRW: '₩', SGD: 'S$', MOP: 'MOP$', AUD: 'A$', CAD: 'C$', THB: '฿' };
+  var SYMBOLS = { HKD: 'HK$', USD: 'US$', EUR: '€', GBP: '£', EGP: 'E£', JPY: '¥', CNY: 'CN¥', TWD: 'NT$', KRW: '₩', SGD: 'S$', MYR: 'RM', THB: '฿', IDR: 'Rp', PHP: '₱', VND: '₫', KHR: '៛', LAK: '₭', MMK: 'K', BND: 'B$', MOP: 'MOP$', AUD: 'A$', CAD: 'C$' };
   var lastField = null;
   var undo = null;
   var barOpen = false;
@@ -140,6 +140,28 @@
     }
   }
 
+  function textScale() {
+    var n = Number(Store.load().settings.textScale);
+    if (!isFinite(n)) n = 1;
+    return Math.min(1.6, Math.max(1, Math.round(n * 10) / 10));
+  }
+
+  function applyTextScale() {
+    var scale = textScale();
+    document.documentElement.style.fontSize = (16 * scale) + 'px';
+    requestAnimationFrame(syncBarLift);
+    var down = document.getElementById('shTextDown');
+    var up = document.getElementById('shTextUp');
+    if (down) down.disabled = scale <= 1;
+    if (up) up.disabled = scale >= 1.6;
+  }
+
+  function setTextScale(next) {
+    var scale = Math.min(1.6, Math.max(1, Math.round(Number(next) * 10) / 10));
+    Store.update(function (data) { data.settings.textScale = scale; });
+    applyTextScale();
+  }
+
   function setTheme(theme) {
     Store.update(function (data) { data.settings.theme = theme === 'light' ? 'light' : 'dark'; });
     applyTheme();
@@ -162,6 +184,16 @@
     });
     var back = document.querySelector('.sh-back');
     if (back) back.textContent = t('home');
+    var textDown = document.getElementById('shTextDown');
+    var textUp = document.getElementById('shTextUp');
+    if (textDown) {
+      textDown.setAttribute('aria-label', t('textSmaller'));
+      textDown.title = t('textSmaller');
+    }
+    if (textUp) {
+      textUp.setAttribute('aria-label', t('textLarger'));
+      textUp.title = t('textLarger');
+    }
     applyTheme();
   }
 
@@ -301,6 +333,12 @@
     });
   }
 
+  function syncBarLift() {
+    var bar = document.querySelector('.sh-bar');
+    if (!bar) return;
+    document.documentElement.style.setProperty('--sh-bar-height', bar.offsetHeight + 'px');
+  }
+
   function renderBar() {
     var bar = document.querySelector('.sh-bar');
     if (!bar) return;
@@ -343,6 +381,7 @@
     bar.appendChild(row);
     var status = el('div', 'sh-status', '');
     bar.appendChild(status);
+    requestAnimationFrame(syncBarLift);
   }
 
   function chip(item) {
@@ -410,7 +449,7 @@
 
   function currencySelect(selected) {
     var select = document.createElement('select');
-    ['HKD', 'USD', 'EUR', 'GBP', 'JPY', 'CNY', 'TWD', 'KRW', 'SGD', 'AUD', 'CAD', 'CHF', 'THB', 'MYR', 'PHP', 'VND', 'IDR', 'NZD', 'MOP', 'INR'].forEach(function (code) {
+    ['HKD', 'USD', 'EUR', 'GBP', 'EGP', 'JPY', 'CNY', 'TWD', 'SGD', 'MYR', 'THB', 'IDR', 'PHP', 'VND', 'KHR', 'LAK', 'MMK', 'BND', 'MOP', 'KRW', 'AUD', 'CAD', 'CHF', 'NZD', 'INR'].forEach(function (code) {
       var option = document.createElement('option');
       option.value = code;
       option.textContent = code;
@@ -645,6 +684,20 @@
         langSeg.appendChild(btn);
       });
       tools.appendChild(langSeg);
+      var scaleSeg = el('div', 'sh-scaleseg');
+      scaleSeg.setAttribute('role', 'group');
+      scaleSeg.setAttribute('aria-label', t('textLarger'));
+      var textDown = el('button', '', 'A\u2212');
+      textDown.type = 'button';
+      textDown.id = 'shTextDown';
+      textDown.addEventListener('click', function () { setTextScale(textScale() - 0.1); });
+      var textUp = el('button', '', 'A+');
+      textUp.type = 'button';
+      textUp.id = 'shTextUp';
+      textUp.addEventListener('click', function () { setTextScale(textScale() + 0.1); });
+      scaleSeg.appendChild(textDown);
+      scaleSeg.appendChild(textUp);
+      tools.appendChild(scaleSeg);
       var themeBtn = el('button', 'sh-iconbtn');
       themeBtn.type = 'button';
       themeBtn.id = 'shThemeToggle';
@@ -657,6 +710,7 @@
       document.body.insertBefore(head, document.body.firstChild);
     }
     applyTheme();
+    applyTextScale();
     paintLangSeg();
     applyPageI18n();
     if (!document.querySelector('.sh-bar')) document.body.appendChild(el('div', 'sh-bar'));
@@ -682,6 +736,7 @@
     if (event.key === 'Escape') closeDialog();
   });
   window.addEventListener('shophelper-change', renderBar);
+  window.addEventListener('resize', syncBarLift);
 
   function applyPageI18n() {
     document.querySelectorAll('[data-i18n]').forEach(function (node) {

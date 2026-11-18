@@ -49,7 +49,7 @@ body.sh-framed {
 body.sh-framed:has(nav) { padding-bottom: calc(11rem + env(safe-area-inset-bottom)); }
 .sh-framed nav { bottom: calc(5.6rem + env(safe-area-inset-bottom)); }
 .sh-framed .fixed.bottom-0 {
-  bottom: calc(5.6rem + env(safe-area-inset-bottom)) !important;
+  bottom: calc(8px + var(--sh-bar-height, 76px) + 6px + env(safe-area-inset-bottom)) !important;
   left: 8px !important;
   right: 8px !important;
   width: auto !important;
@@ -118,6 +118,25 @@ button { cursor: pointer; }
 }
 .sh-langseg button + button { border-left: 1px solid var(--sh-line); }
 .sh-langseg button.on { background: var(--sh-accent); color: var(--sh-on); }
+.sh-scaleseg {
+  display: inline-flex;
+  border: 1px solid var(--sh-line);
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--sh-bg);
+}
+.sh-scaleseg button {
+  border: 0;
+  background: transparent;
+  color: var(--sh-ink);
+  min-height: 36px;
+  min-width: 36px;
+  padding: 0 8px;
+  font-size: 0.82rem;
+  font-weight: 750;
+}
+.sh-scaleseg button + button { border-left: 1px solid var(--sh-line); }
+.sh-scaleseg button:disabled { color: var(--sh-muted); opacity: 0.45; }
 .sh-page { width: min(880px, 100%); margin: 0 auto; padding: 12px 14px 24px; }
 .sh-lead { color: var(--sh-muted); margin: 0 0 16px; line-height: 1.45; }
 .sh-grid {
@@ -174,6 +193,10 @@ label.sh-label, .sh-label {
   font-size: 0.78rem; letter-spacing: 0.04em; text-transform: uppercase;
   color: var(--sh-muted); font-weight: 700;
 }
+.sh-page input,
+.sh-card input,
+.sh-panel input,
+.sh-dialog input,
 .sh-page input[type="text"],
 .sh-page input[type="search"],
 .sh-page input[type="number"],
@@ -199,14 +222,22 @@ label.sh-label, .sh-label {
   border: 1px solid var(--sh-line);
   background: var(--sh-bg);
   padding: 10px 12px;
-  font-size: 16px;
+  font-size: 1rem;
 }
 .sh-page textarea,
 .sh-panel textarea,
 .sh-dialog textarea { min-height: 120px; resize: vertical; line-height: 1.45; }
-.sh-row { display: flex; gap: 8px; align-items: center; }
-.sh-row > * { flex: 1; min-width: 0; }
-.sh-amount { font-size: 1.8rem; font-weight: 750; letter-spacing: -0.03em; padding-top: 8px; padding-bottom: 8px; }
+.sh-card, .sh-page { min-width: 0; }
+.sh-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; min-width: 0; }
+.sh-row > * { flex: 1 1 8rem; min-width: 0; max-width: 100%; }
+.sh-row > .sh-btn, .sh-row > button { flex: 0 1 auto; }
+.sh-amount {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  font-size: 1.8rem; font-weight: 750; letter-spacing: -0.03em; padding-top: 8px; padding-bottom: 8px;
+}
 .sh-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
 .sh-btn, button.sh-btn {
   min-height: 44px;

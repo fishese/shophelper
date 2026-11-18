@@ -1,5 +1,5 @@
 'use strict';
-var CACHE = 'shophelper-v15';
+var CACHE = 'shophelper-v17';
 var ASSETS = [
   './',
   './index.html',
@@ -23,6 +23,16 @@ var ASSETS = [
   './js/list-store.js',
   './js/list-codec.js',
   './js/vendor/pako.min.js',
+  './js/vendor/vue.global.prod.js',
+  './js/vendor/tailwind.cdn.js',
+  './js/vendor/jsQR.js',
+  './js/vendor/qrcode.js',
+  './js/vendor/JsBarcode.all.min.js',
+  './js/vendor/html5-qrcode.min.js',
+  './js/vendor/bwip-js-min.js',
+  './js/vendor/tesseract.min.js',
+  './js/vendor/tesseract.worker.min.js',
+  './js/vendor/tesseract-core-simd-lstm.wasm.js',
   './tools/shopping-list/index.html',
   './tools/shopping-list/page.js',
   './tools/units/index.html',
@@ -54,30 +64,32 @@ self.addEventListener('activate', function (event) {
   }).then(function () { return self.clients.claim(); }));
 });
 
+function cacheKey(request) {
+  var url = new URL(request.url);
+  url.search = '';
+  url.hash = '';
+  return url.toString();
+}
+
 self.addEventListener('fetch', function (event) {
   if (event.request.method !== 'GET') return;
   var url = new URL(event.request.url);
   if (url.origin !== self.location.origin) return;
-  // Always take network for JS/CSS during polish so theme/lang edits show up.
-  if (/\.(js|css)(\?|$)/.test(url.pathname)) {
-    event.respondWith(fetch(event.request).then(function (response) {
-      return response;
-    }).catch(function () {
-      return caches.match(event.request);
-    }));
-    return;
-  }
-  event.respondWith(fetch(event.request).then(function (response) {
-    if (response && response.ok) {
-      var copy = response.clone();
-      caches.open(CACHE).then(function (cache) { cache.put(event.request, copy); }).catch(function () {});
-    }
-    return response;
-  }).catch(function () {
-    return caches.match(event.request).then(function (cached) {
+  // Cache first so tool switches don't wait on the network. A background
+  // fetch still refreshes the cache for the next open.
+  event.respondWith(caches.open(CACHE).then(function (cache) {
+    var key = cacheKey(event.request);
+    return cache.match(key).then(function (cached) {
+      var refresh = fetch(event.request).then(function (response) {
+        if (response && response.ok) cache.put(key, response.clone());
+        return response;
+      }).catch(function () { return null; });
       if (cached) return cached;
-      if (event.request.mode === 'navigate') return caches.match('./index.html');
-      return Response.error();
+      return refresh.then(function (response) {
+        if (response) return response;
+        if (event.request.mode === 'navigate') return cache.match('./index.html');
+        return Response.error();
+      });
     });
   }));
 });

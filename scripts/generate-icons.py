@@ -76,8 +76,8 @@ def main() -> None:
     root_assets = {
         "icon-192.png": make_any(master, 192),
         "icon-512.png": make_any(master, 512),
-        "icon-maskable-192.png": make_maskable(master, 192, tl, br, 0.58),
-        "icon-maskable-512.png": make_maskable(master, 512, tl, br, 0.58),
+        "icon-maskable-192.png": make_maskable(master, 192, tl, br, 0.84),
+        "icon-maskable-512.png": make_maskable(master, 512, tl, br, 0.84),
         "favicon.png": make_any(master, 48),
         "favicon-32.png": make_any(master, 32),
         "apple-touch-icon.png": make_any(master, 180),
@@ -98,7 +98,9 @@ def main() -> None:
     }
     # Samsung One UI was re-zooming adaptive layers and clipping the bag.
     # Ship padded legacy PNGs only (no mipmap-anydpi-v26 adaptive XML).
-    legacy_ratio = 0.58
+    # Samsung's rounded mask clips the corners. 0.58 left a tiny bag;
+    # 0.84 fills the mask with a thin ring of gradient still visible.
+    legacy_ratio = 0.84
     for folder, size in legacy.items():
         img = make_maskable(master, size, tl, br, legacy_ratio)
         d = os.path.join(RES, folder)
@@ -117,7 +119,7 @@ def main() -> None:
         "mipmap-xxxhdpi": 432,
     }
     for folder, size in fg_sizes.items():
-        img = make_adaptive_fg(master, size, tl, br, 0.58)
+        img = make_adaptive_fg(master, size, tl, br, 0.84)
         path = os.path.join(RES, folder, "ic_launcher_foreground.png")
         img.save(path, "PNG", optimize=True)
         print("wrote", os.path.relpath(path, ROOT), img.size)
