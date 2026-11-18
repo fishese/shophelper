@@ -1,5 +1,5 @@
 'use strict';
-var CACHE = 'shophelper-v18';
+var CACHE = 'shophelper-v19';
 var ASSETS = [
   './',
   './index.html',

@@ -46,6 +46,9 @@ body.sh-framed {
   padding-top: calc(var(--sh-head) + env(safe-area-inset-top) + 32px);
   padding-bottom: calc(6.2rem + env(safe-area-inset-bottom));
 }
+body.sh-framed.sh-no-bar {
+  padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+}
 body.sh-framed:has(nav) { padding-bottom: calc(11rem + env(safe-area-inset-bottom)); }
 .sh-framed nav { bottom: calc(5.6rem + env(safe-area-inset-bottom)); }
 .sh-framed .fixed.bottom-0 {

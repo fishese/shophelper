@@ -713,8 +713,12 @@
     applyTextScale();
     paintLangSeg();
     applyPageI18n();
-    if (!document.querySelector('.sh-bar')) document.body.appendChild(el('div', 'sh-bar'));
-    renderBar();
+    if (document.documentElement.dataset.shNobar === '1') {
+      document.body.classList.add('sh-no-bar');
+    } else {
+      if (!document.querySelector('.sh-bar')) document.body.appendChild(el('div', 'sh-bar'));
+      renderBar();
+    }
   }
 
   document.addEventListener('focusin', function (event) {
