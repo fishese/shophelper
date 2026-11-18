@@ -1,5 +1,5 @@
 'use strict';
-var CACHE = 'shophelper-v17';
+var CACHE = 'shophelper-v18';
 var ASSETS = [
   './',
   './index.html',
@@ -22,6 +22,8 @@ var ASSETS = [
   './js/home.js',
   './js/list-store.js',
   './js/list-codec.js',
+  './js/sizes.js',
+  './js/sizes-store.js',
   './js/vendor/pako.min.js',
   './js/vendor/vue.global.prod.js',
   './js/vendor/tailwind.cdn.js',
@@ -37,6 +39,8 @@ var ASSETS = [
   './tools/shopping-list/page.js',
   './tools/units/index.html',
   './tools/units/page.js',
+  './tools/sizes/index.html',
+  './tools/sizes/page.js',
   './tools/currency/index.html',
   './tools/currency/page.js',
   './tools/tax/index.html',
