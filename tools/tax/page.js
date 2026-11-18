@@ -149,7 +149,7 @@
       if (row.status === 'received') {
         var actual = document.createElement('input');
         actual.inputMode = 'decimal';
-        actual.placeholder = 'Amount received';
+        actual.placeholder = SH.t('amountReceived');
         actual.value = row.actualAmount || '';
         actual.addEventListener('change', function () { update(row.id, { actualAmount: actual.value, receivedDate: row.receivedDate || SH.today() }); });
         var when = document.createElement('input');
@@ -162,9 +162,9 @@
       var remove = document.createElement('button');
       remove.className = 'sh-btn warn';
       remove.type = 'button';
-      remove.textContent = 'Delete';
+      remove.textContent = SH.t('deleteRefund');
       remove.addEventListener('click', function () {
-        if (!window.confirm('Delete this refund?')) return;
+        if (!window.confirm(SH.t('deleteRefundConfirm'))) return;
         Store.update(function (data) { data.refunds = data.refunds.filter(function (item) { return item.id !== row.id; }); });
         renderTracker();
       });
@@ -187,5 +187,9 @@
     renderTracker();
   }
 
+  window.addEventListener('shophelper-lang', function () {
+    render();
+    renderTracker();
+  });
   render();
 })();

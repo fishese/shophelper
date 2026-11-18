@@ -44,9 +44,9 @@
       title.textContent = product.name + (product.brand ? ' · ' + product.brand : '') + (packText(card.usual) ? ' · ' + packText(card.usual) : '');
       article.appendChild(title);
       var row = document.createElement('p');
-      row.textContent = 'Usual ' + SH.money(card.usual.price, card.usual.currency)
-        + '    Best ' + SH.money(card.best.price, card.best.currency)
-        + '    Last ' + SH.money(card.last.price, card.last.currency);
+      row.textContent = SH.t('pricesUsual') + ' ' + SH.money(card.usual.price, card.usual.currency)
+        + '    ' + SH.t('pricesBest') + ' ' + SH.money(card.best.price, card.best.currency)
+        + '    ' + SH.t('pricesLast') + ' ' + SH.money(card.last.price, card.last.currency);
       article.appendChild(row);
       var where = document.createElement('p');
       where.className = 'sh-note';

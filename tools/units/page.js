@@ -44,7 +44,7 @@
       catHost.appendChild(button);
     });
   }
-  window.addEventListener('shophelper-lang', function () { paintCats(); });
+  window.addEventListener('shophelper-lang', function () { render(); });
 
   function render() {
     var cat = current();
@@ -59,7 +59,7 @@
       result.textContent = '—';
       SH.clearResult('units');
     } else if (value == null) {
-      result.textContent = 'Cannot convert';
+      result.textContent = SH.t('unitsNoConvert');
       SH.clearResult('units');
     } else {
       result.textContent = value + ' ' + draft.to;
